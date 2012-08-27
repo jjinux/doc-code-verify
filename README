@@ -1,0 +1,57 @@
+doc_code_merge
+==============
+
+doc_code_merge is a tool to merge source code into documentation. Keeping the
+source code separate of the documentation makes it easier to work with and
+easier to test. Merging the two can be part of your build process.
+
+Usage
+-----
+
+Start by writing some documentation. You can use either a single file or a
+whole file hierarchy. The documentation can have lines that look like this:
+
+  #MERGE my_example_name
+
+Then create a separate codebase. Again, it can be either a single file or a
+whole file hierarchy. Inside the code, you can have examples such as:
+
+  // #BEGIN my_example_name
+  Lots of source code
+  // #END my_example_name
+
+Example blocks may overlap with one another. If two blocks share the same
+name, they'll be concatenated.
+
+I plan to make the actual syntax configurable. Naturally, the goal is to
+support any text-based documentation format (especially HTML) and any type of
+source code (especially Dart).
+
+Now, setup your environment:
+
+  export DART_SDK=.../dart/dart-sdk
+  export PATH=$PATH:$DART_SDK/bin
+  pub install
+
+To create a copy of the documentation with examples from the source code
+merged into it, run:
+
+  dart doc_code_merge.dart DOCUMENTATION CODE OUTPUT
+
+DOCUMENTATION and CODE (whether they are files or directories) will not be
+changed. OUTPUT will end up with the same structure as DOCUMENTATION. If
+doc_code_merge.dart already exists, doc_code_merge.dart will ask you to either
+delete it or pass the --delete-first flag (which will delete it for you).
+
+Developing
+----------
+
+To work on doc_code_merge, you'll need to set DartEditor >> Preferences >>
+Editor >> Package directory to doc_code_merge/packages.
+
+Testing
+-------
+
+To run the unittests:
+
+  dart test_doc_code_merge.dart
