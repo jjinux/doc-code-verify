@@ -10,8 +10,12 @@ class DocCodeMerger {
   static final mergeRegExp = const RegExp(@"#MERGE +(\w+)");
   static final newline = "\n";
   
+  Directory documentationDirectory;
+  Directory codeDirectory;
+  Directory outputDirectory;
   Map<String, StringBuffer> examples;
   bool errorsEncountered = false;
+  bool deleteFirst = false;
   
   DocCodeMerger() {
     examples = new Map<String, StringBuffer>();
@@ -84,7 +88,7 @@ class DocCodeMerger {
    * 
    * If deleteFirst is true, try to delete the directory if it exists.
    */
-  void prepareOutputDirectory(Directory outputDirectory, [deleteFirst = false, print = print]) {
+  void prepareOutputDirectory(Directory outputDirectory, [print = print]) {
     if (outputDirectory.existsSync()) {
       if (deleteFirst) {
         outputDirectory.deleteRecursivelySync();
@@ -94,5 +98,38 @@ class DocCodeMerger {
               "You should either delete it or pass the --delete-first flag");
       }
     }
+  }
+  
+  /// Parse command-line arguments.
+  void parseArguments(List<String> arguments, [print = print]) {
+    var positionalArguments = <String>[];
+    for (var i = 0; i < arguments.length; i++) {
+      String arg = arguments[i];
+      if (arg == "-h" || arg == "--help") {
+        print(getUsage());
+        return;
+      }
+      if (arg == "--delete-first") {
+        deleteFirst = true;
+      }
+      if (!arg.startsWith("-")) {
+        positionalArguments.add(arg);
+      }
+    }
+
+    if (positionalArguments.length == 3) {
+      documentationDirectory = new Directory(positionalArguments[0]);
+      codeDirectory = new Directory(positionalArguments[1]);
+      outputDirectory = new Directory(positionalArguments[2]);
+    } else {
+      errorsEncountered = true;
+      print("$scriptName: Expected 3 positional arguments\n${getUsage()}");
+    }
+  }
+  
+  /// Return usage information.
+  String getUsage() {
+    return """\
+usage: $scriptName [-h] [--help] [--delete-first] DOCUMENTATION CODE OUTPUT""";
   }
 }

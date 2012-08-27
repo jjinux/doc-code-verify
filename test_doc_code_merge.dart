@@ -136,13 +136,60 @@ void main() {
     test("prepareOutputDirectory should delete the directory if deleteFirst is true", () {
       Directory tempDir = new Directory("").createTempSync();
       try {
-        merger.prepareOutputDirectory(tempDir, deleteFirst: true);
+        merger.deleteFirst = true;
+        merger.prepareOutputDirectory(tempDir);
         expect(merger.errorsEncountered, isFalse);
       } finally {
         if (tempDir.existsSync()) {
           tempDir.deleteRecursivelySync();
         }
       }      
+    });
+    
+    test("parseArguments accepts exactly 3 positional arguments", () {
+      merger.parseArguments(["DOCUMENTATION", "CODE", "OUTPUT"]);
+      expect(merger.errorsEncountered, isFalse);
+      expect(merger.documentationDirectory.path, equals(new Directory("DOCUMENTATION").path));
+      expect(merger.codeDirectory.path, equals(new Directory("CODE").path));
+      expect(merger.outputDirectory.path, equals(new Directory("OUTPUT").path));
+    });
+    
+    test("parseArguments complains if there aren't exactly 3 positional arguments", () {
+      var printedError = false;
+     
+      void _print(String s) {
+        expect(s, stringContainsInOrder(["$scriptName: Expected 3 positional arguments",
+                                         "usage: $scriptName",
+                                         "DOCUMENTATION CODE OUTPUT"]));
+        printedError = true;
+      }
+      
+      merger.parseArguments([], print: _print);
+      expect(merger.errorsEncountered, isTrue);
+      expect(printedError, isTrue);
+    });
+    
+    test("parseArguments can print usage", () {
+      var printedUsage;
+      
+      void _print(String s) {
+        expect(s, stringContainsInOrder(["usage: $scriptName",
+                                         "DOCUMENTATION CODE OUTPUT"]));
+        printedUsage = true;
+      }
+      
+      ["--help", "-h"].forEach((arg) {
+        printedUsage = false;
+        merger.parseArguments([arg], print: _print);
+        expect(merger.errorsEncountered, isFalse);
+        expect(printedUsage, isTrue);
+      });
+    });
+    
+    test("parseArguments can set the --delete-first flag", () {
+      expect(merger.deleteFirst, isFalse);
+      merger.parseArguments(["--delete-first"]);
+      expect(merger.deleteFirst, isTrue);
     });
   });  
 }
