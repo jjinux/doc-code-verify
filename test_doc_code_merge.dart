@@ -55,5 +55,23 @@ void main() {
         line
       """.trim()));
     });
-  });
+    
+    test('scanForExamples concatenates examples with the same name', () {
+      merger.scanForExamples("""
+        // #BEGIN example
+        line
+        // #END example
+        line
+        line
+        // #BEGIN example
+        line
+        // #END example
+      """);
+      
+      expect(merger.examples["example"].toString().trim(), equals("""
+        line
+        line
+      """.trim()));
+    });
+  });  
 }
