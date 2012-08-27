@@ -27,11 +27,11 @@ void main() {
         }
       """);
       
-      expect(merger.examples["add"].toString().trim(), equals("""
+      expect(merger.examples["add"].toString(), equalsIgnoringWhitespace("""
         num add(num a, num b) {
           return a + b;
         }
-      """.trim()));
+      """));
     });
     
     test('scanForExamples permits overlapping examples', () {
@@ -46,14 +46,14 @@ void main() {
         line
       """);
       
-      expect(merger.examples["one_line"].toString().trim(), equals("""
+      expect(merger.examples["one_line"].toString(), equalsIgnoringWhitespace("""
         line
-      """.trim()));
+      """));
 
-      expect(merger.examples["two_lines"].toString().trim(), equals("""
+      expect(merger.examples["two_lines"].toString(), equalsIgnoringWhitespace("""
         line
         line
-      """.trim()));
+      """));
     });
     
     test('scanForExamples concatenates examples with the same name', () {
@@ -68,10 +68,50 @@ void main() {
         // #END example
       """);
       
-      expect(merger.examples["example"].toString().trim(), equals("""
+      expect(merger.examples["example"].toString(), equalsIgnoringWhitespace("""
         line
         line
-      """.trim()));
+      """));
+    });
+    
+    test('mergeExamples merges in examples', () {
+      merger.scanForExamples("""
+        // #BEGIN example
+        Source code
+        // #END example
+      """); 
+      String merged = merger.mergeExamples("""
+        Documentation
+        #MERGE example
+        More documentation
+      """);
+      expect(merged, equalsIgnoringWhitespace("""
+        Documentation
+        Source code
+        More documentation
+      """));
+    });
+    
+    test('mergeExamples handles missing examples', () {
+      var printedError = false;
+      
+      void _print(String s) {
+        expect(s, equals("ERROR: No such example: hello_world"));
+        printedError = true;
+      }
+
+      String merged = merger.mergeExamples("""
+        Documentation
+        #MERGE hello_world
+        More documentation
+      """, print: _print);
+      expect(merger.errorsEncountered, isTrue);
+      expect(merged, equalsIgnoringWhitespace("""
+        Documentation
+        ERROR: No such example: hello_world
+        More documentation
+      """));
+      expect(printedError, isTrue);
     });
   });  
 }
