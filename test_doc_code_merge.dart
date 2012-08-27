@@ -1,5 +1,5 @@
+#import('dart:io');
 #import('package:unittest/unittest.dart');
-
 #import('doc_code_merge.dart');
 
 void main() {
@@ -96,7 +96,7 @@ void main() {
       var printedError = false;
       
       void _print(String s) {
-        expect(s, equals("ERROR: No such example: hello_world"));
+        expect(s, equals("$scriptName: No such example: hello_world"));
         printedError = true;
       }
 
@@ -112,6 +112,37 @@ void main() {
         More documentation
       """));
       expect(printedError, isTrue);
+    });
+    
+    test("prepareOutputDirectory checks that the output directory doesn't exist", () {
+      merger.prepareOutputDirectory(new Directory("this_should_not_exist"));
+      expect(merger.errorsEncountered, isFalse);
+    });
+    
+    test("prepareOutputDirectory complains if the directory does exist", () {
+      var printedError = false;
+      
+      void _print(String s) {
+        expect(s, equals("$scriptName: Could not prepare output directory `${new Directory.current().path}`: Directory already exists\n"
+                         "You should either delete it or pass the --delete-first flag"));
+        printedError = true;
+      }
+
+      merger.prepareOutputDirectory(new Directory.current(), print: _print);
+      expect(merger.errorsEncountered, isTrue);
+      expect(printedError, isTrue);
+    });
+    
+    test("prepareOutputDirectory should delete the directory if deleteFirst is true", () {
+      Directory tempDir = new Directory("").createTempSync();
+      try {
+        merger.prepareOutputDirectory(tempDir, deleteFirst: true);
+        expect(merger.errorsEncountered, isFalse);
+      } finally {
+        if (tempDir.existsSync()) {
+          tempDir.deleteRecursivelySync();
+        }
+      }      
     });
   });  
 }

@@ -1,4 +1,7 @@
 #library("doc_code_merge");
+#import('dart:io');
+
+final scriptName = "doc_code_merge.dart";
 
 class DocCodeMerger {
   static final newlineRegExp = const RegExp(@"\r\n|\r|\n");
@@ -62,9 +65,9 @@ class DocCodeMerger {
         
         if (example == null) {
           errorsEncountered = true;
-          var error = "ERROR: No such example: $exampleName";
-          print(error);
-          output.addAll([error, newline]);
+          var error = "No such example: $exampleName";
+          print("$scriptName: $error");
+          output.addAll(["ERROR: $error", newline]);
         } else {
           output.add(example.toString());
         }
@@ -74,5 +77,22 @@ class DocCodeMerger {
       output.addAll([line, newline]);
     });
     return output.toString();
+  }
+  
+  /**
+   * Check that the output directory doesn't exist.
+   * 
+   * If deleteFirst is true, try to delete the directory if it exists.
+   */
+  void prepareOutputDirectory(Directory outputDirectory, [deleteFirst = false, print = print]) {
+    if (outputDirectory.existsSync()) {
+      if (deleteFirst) {
+        outputDirectory.deleteRecursivelySync();
+      } else {
+        errorsEncountered = true;
+        print("$scriptName: Could not prepare output directory `${outputDirectory.path}`: Directory already exists\n"
+              "You should either delete it or pass the --delete-first flag");
+      }
+    }
   }
 }
