@@ -15,23 +15,26 @@ class DocCodeMerger {
   /// Scan input for examples and update `examples`.
   void scanForExamples(String input) {
     List<String> lines = input.split(newlineRegExp);
-    String exampleName;
+    var openExamples = new Set<String>();
     lines.forEach((line) {
+
       Match beginMatch = beginRegExp.firstMatch(line);
       if (beginMatch != null) {
-        exampleName = beginMatch[1];
+        openExamples.add(beginMatch[1]);
         return;
       }
       
       Match endMatch = endRegExp.firstMatch(line);
       if (endMatch != null) {
-        exampleName = null;
+        openExamples.remove(endMatch[1]);
         return;
       }
       
-      if (exampleName != null) {
-        examples.putIfAbsent(exampleName, () => new StringBuffer());
-        examples[exampleName].addAll([line, newline]);
+      if (!openExamples.isEmpty()) {
+        openExamples.forEach((exampleName) {
+          examples.putIfAbsent(exampleName, () => new StringBuffer());
+          examples[exampleName].addAll([line, newline]);
+        });
       }
     });
   }

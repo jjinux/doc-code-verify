@@ -33,5 +33,27 @@ void main() {
         }
       """.trim()));
     });
+    
+    test('scanForExamples permits overlapping examples', () {
+      merger.scanForExamples("""
+        // #BEGIN two_lines
+        line
+        // #BEGIN one_line
+        line
+        // #END two_lines
+        // #END one_line
+        line
+        line
+      """);
+      
+      expect(merger.examples["one_line"].toString().trim(), equals("""
+        line
+      """.trim()));
+
+      expect(merger.examples["two_lines"].toString().trim(), equals("""
+        line
+        line
+      """.trim()));
+    });
   });
 }
