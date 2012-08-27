@@ -23,6 +23,10 @@ whole file hierarchy. Inside the code, you can have examples such as:
 Example blocks may overlap with one another. If two blocks share the same
 name, they'll be concatenated.
 
+The syntax is line-oriented. I.e. each directive should be on
+its own line. However, putting other things on the line, such as comment
+markers, is generally okay.
+
 I plan to make the actual syntax configurable. Naturally, the goal is to
 support any text-based documentation format (especially HTML) and any type of
 source code (especially Dart).
