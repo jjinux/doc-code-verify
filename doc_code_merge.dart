@@ -9,6 +9,7 @@ class DocCodeMerger {
   static final endRegExp = const RegExp(@"#END +(\w+)");
   static final mergeRegExp = const RegExp(@"#MERGE +(\w+)");
   static final newline = "\n";
+  static final encoding = Encoding.UTF_8;
   
   Directory documentationDirectory;
   Directory codeDirectory;
@@ -21,7 +22,7 @@ class DocCodeMerger {
     examples = new Map<String, StringBuffer>();
   }
   
-  /// Scan input for examples and update `examples`.
+  /// Scan input for examples and update [examples].
   void scanForExamples(String sourceCode) {
     List<String> lines = sourceCode.split(newlineRegExp);
     var openExamples = new Set<String>();
@@ -46,6 +47,25 @@ class DocCodeMerger {
         });
       }
     });
+  }
+  
+  /**
+   * Scan an entire directory for examples and update [examples].
+   * 
+   * I'm stuck using an async interface since there is no synchronous interface for Directory.list.
+   * See: http://code.google.com/p/dart/issues/detail?id=4730
+   */
+  Future scanDirectoryForExamples(Directory sourceDirectory) {
+    var completer = new Completer();
+    DirectoryLister lister = sourceDirectory.list(recursive: true);
+    lister.onFile = (String path) {
+      String name = new Path.fromNative(path).filename;
+      if (name.startsWith('.')) return;  // Ignore hidden files like .DS_Store.
+      var sourceCode = new File(path).readAsTextSync(encoding);
+      scanForExamples(sourceCode);
+    };
+    lister.onDone = (done) => completer.complete(true);
+    return completer.future;
   }
   
   /**

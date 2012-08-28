@@ -74,6 +74,19 @@ void main() {
       """));
     });
     
+    test('scanDirectoryForExamples can scan this directory for examples', () {
+      // #BEGIN thisTestIsSoMeta
+      // meta meta meta
+      // #END thisTestIsSoMeta
+      Directory scriptDirectory = new File(new Options().script).directorySync();
+      merger.scanDirectoryForExamples(scriptDirectory).then(expectAsync1((completed) {
+        expect(merger.examples.length, greaterThan(1));
+        expect(merger.examples["thisTestIsSoMeta"].toString(), equalsIgnoringWhitespace("""
+          // meta meta meta
+        """));
+      }));
+    });
+
     test('mergeExamples merges in examples', () {
       merger.scanForExamples("""
         // #BEGIN example
@@ -188,7 +201,7 @@ void main() {
     
     test("parseArguments can set the --delete-first flag", () {
       expect(merger.deleteFirst, isFalse);
-      merger.parseArguments(["--delete-first"]);
+      merger.parseArguments(["--delete-first"], print: (s) { /* shh! */ });
       expect(merger.deleteFirst, isTrue);
     });
   });  
