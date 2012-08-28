@@ -2,6 +2,27 @@
 #import('package:unittest/unittest.dart');
 #import('doc_code_merge.dart');
 
+/**
+ * Call a callback with a temporary directory.
+ * 
+ * Delete it once the callback is done.
+ */
+void callWithTemporaryDirectorySync(void callback(Directory temp)) {
+  Directory temp = new Directory("").createTempSync();
+  try {
+    callback(temp);
+  } finally {
+    if (temp.existsSync()) {
+      temp.deleteRecursivelySync();
+    }
+  }
+}
+
+/// Return this script's directory.
+Directory getScriptDirectory() {
+  return new File(new Options().script).directorySync();
+}
+
 void main() {
   group('DocCodeMerger', () {
     DocCodeMerger merger;
@@ -78,8 +99,7 @@ void main() {
       // #BEGIN thisTestIsSoMeta
       // meta meta meta
       // #END thisTestIsSoMeta
-      Directory scriptDirectory = new File(new Options().script).directorySync();
-      merger.scanDirectoryForExamples(scriptDirectory).then(expectAsync1((completed) {
+      merger.scanDirectoryForExamples(getScriptDirectory()).then(expectAsync1((completed) {
         expect(merger.examples.length, greaterThan(1));
         expect(merger.examples["thisTestIsSoMeta"].toString(), equalsIgnoringWhitespace("""
           // meta meta meta
@@ -127,12 +147,53 @@ void main() {
       expect(printedError, isTrue);
     });
     
-    test("prepareOutputDirectory checks that the output directory doesn't exist", () {
-      merger.prepareOutputDirectory(new Directory("this_should_not_exist"));
+    test('copyAndMergeDirectory should copy the source code and merge in the examples', () {
+      // #BEGIN copyAndMergeDirectory
+      // This is the copyAndMergeDirectory example.
+      // #END copyAndMergeDirectory
+      //
+      // Start of merge
+      // #MERGE copyAndMergeDirectory
+      // End of merge
+
+      Directory tempDir = new Directory("").createTempSync();
+            
+      // Deleting and recreating a temporary directory is just slightly
+      // dangerous, but this test won't be running as root.
+      merger.deleteFirst = true;
+
+      Directory scriptDirectory = getScriptDirectory();
+      
+      // expectAsync1 can't be called from within a "then" clause because that won't be called
+      // until after all the tests run.
+      var checkResults = expectAsync1((bool completed) {
+        String scriptFilename = new Path.fromNative(new Options().script).filename;
+        Path outputDirectory = new Path.fromNative(tempDir.path);
+        Path mergedFile = outputDirectory.append(scriptFilename);
+        String mergedSource = new File.fromPath(mergedFile).readAsTextSync(DocCodeMerger.encoding);
+        expect(mergedSource, stringContainsInOrder(["Start of merge",
+                                                    "This is the copyAndMergeDirectory example.",
+                                                    "End of merge"]));
+
+        // XXX: If there is an exception, or something else weird happens, then
+        // the temp directory gets leaked. I can't figure out how to do it with
+        // this strange mix of async and sync code.
+        tempDir.deleteRecursivelySync();
+      });
+      
+      
+      merger.scanDirectoryForExamples(scriptDirectory)
+      .chain((result) => merger.copyAndMergeDirectory(scriptDirectory,
+          scriptDirectory, tempDir, print: printNothing))
+      .then(checkResults);
+    });
+
+    test("clearOutputDirectory checks that the output directory doesn't exist", () {
+      merger.clearOutputDirectory(new Directory("this_should_not_exist"));
       expect(merger.errorsEncountered, isFalse);
     });
     
-    test("prepareOutputDirectory complains if the directory does exist", () {
+    test("clearOutputDirectory complains if the directory does exist", () {
       var printedError = false;
       
       void _print(String s) {
@@ -141,22 +202,17 @@ void main() {
         printedError = true;
       }
 
-      merger.prepareOutputDirectory(new Directory.current(), print: _print);
+      merger.clearOutputDirectory(new Directory.current(), print: _print);
       expect(merger.errorsEncountered, isTrue);
       expect(printedError, isTrue);
     });
     
-    test("prepareOutputDirectory should delete the directory if deleteFirst is true", () {
-      Directory tempDir = new Directory("").createTempSync();
-      try {
+    test("clearOutputDirectory should delete the directory if deleteFirst is true", () {
+      callWithTemporaryDirectorySync((tempDir) {
         merger.deleteFirst = true;
-        merger.prepareOutputDirectory(tempDir);
-        expect(merger.errorsEncountered, isFalse);
-      } finally {
-        if (tempDir.existsSync()) {
-          tempDir.deleteRecursivelySync();
-        }
-      }      
+        merger.clearOutputDirectory(tempDir);
+        expect(merger.errorsEncountered, isFalse);        
+      });
     });
     
     test("parseArguments accepts exactly 3 positional arguments", () {
@@ -201,7 +257,7 @@ void main() {
     
     test("parseArguments can set the --delete-first flag", () {
       expect(merger.deleteFirst, isFalse);
-      merger.parseArguments(["--delete-first"], print: (s) { /* shh! */ });
+      merger.parseArguments(["--delete-first"], print: printNothing);
       expect(merger.deleteFirst, isTrue);
     });
   });  
