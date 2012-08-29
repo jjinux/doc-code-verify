@@ -33,13 +33,15 @@ whole file hierarchy. Inside the code, you can have examples such as:
 To create a copy of the documentation with examples from the source code
 merged into it, run:
 
-	dart doc_code_merge.dart DOCUMENTATION CODE OUTPUT
+	doc_code_merge.dart DOCUMENTATION CODE OUTPUT
 
 DOCUMENTATION and CODE (whether they are files or directories) will not be
 changed. OUTPUT will end up with the same structure as DOCUMENTATION.
 
 Details
 -------
+
+To get usage, run: doc_code_merge.dart --help
 
 The syntax is line-oriented. I.e. each directive should be on its own line.
 However, putting other things on the line, such as comment markers, is
