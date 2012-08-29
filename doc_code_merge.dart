@@ -73,8 +73,9 @@ class DocCodeMerger {
     var completer = new Completer();
     DirectoryLister lister = sourceDirectory.list(recursive: true);
     lister.onFile = (String path) {
-      Path filenameAsPath = new Path.fromNative(new Path.fromNative(path).filename);
-      if (isPrivate(filenameAsPath)) return;
+      Path pathPath = new Path.fromNative(path);  // :)
+      if (isPrivate(pathPath)) return;
+      Path filenameAsPath = new Path.fromNative(pathPath.filename);
       var sourceCode = new File(path).readAsTextSync(encoding);
       scanForExamples(sourceCode);
     };

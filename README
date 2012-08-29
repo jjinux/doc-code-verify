@@ -1,7 +1,7 @@
-doc_code_merge
+doc-code-merge
 ==============
 
-doc_code_merge is a tool to merge source code into documentation. Keeping the
+doc-code-merge is a tool to merge source code into documentation. Keeping the
 source code separate of the documentation makes it easier to work with and
 easier to test. Merging the two can be part of your build process.
 
@@ -37,6 +37,9 @@ Now, setup your environment:
   export PATH=$PATH:$DART_SDK/bin
   pub install
 
+  # HACK: Work around: http://code.google.com/p/dart/issues/detail?id=4801
+  rm packages/doc-code-merge
+
 To create a copy of the documentation with examples from the source code
 merged into it, run:
 
@@ -50,8 +53,8 @@ delete it or pass the --delete-first flag (which will delete it for you).
 Developing
 ----------
 
-To work on doc_code_merge, you'll need to set DartEditor >> Preferences >>
-Editor >> Package directory to doc_code_merge/packages.
+To work on doc-code-merge, you'll need to set DartEditor >> Preferences >>
+Editor >> Package directory to doc-code-merge/packages.
 
 Testing
 -------
@@ -70,6 +73,10 @@ this.
 
 Handle symlinks in the documentation or code. Get rid of the place where I'm
 catching an exception to work around symlinks.
+
+It gets hopelessly confused by symlink loops. See
+(http://code.google.com/p/dart/issues/detail?id=4801). See also the "HACK" in
+this file.
 
 Make it possible to configure the syntax.
 

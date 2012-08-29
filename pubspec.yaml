@@ -1,3 +1,5 @@
+name: doc-code-merge
+
 dependencies:
   unittest:
     sdk: unittest
