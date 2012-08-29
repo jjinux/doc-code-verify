@@ -228,10 +228,11 @@ void main() {
     });
     
     test("parseArguments accepts exactly 3 positional arguments", () {
-      merger.parseArguments(["DOCUMENTATION", "CODE", "OUTPUT"]);
+      String thisDir = getScriptDirectory().path;
+      merger.parseArguments([thisDir, thisDir, "OUTPUT"]);
       expect(merger.errorsEncountered, isFalse);
-      expect(merger.documentationDirectory.path, equals(new Directory("DOCUMENTATION").path));
-      expect(merger.codeDirectory.path, equals(new Directory("CODE").path));
+      expect(merger.documentationDirectory.path, equals(thisDir));
+      expect(merger.codeDirectory.path, equals(thisDir));
       expect(merger.outputDirectory.path, equals(new Directory("OUTPUT").path));
     });
     
@@ -248,6 +249,33 @@ void main() {
       merger.parseArguments([], print: _print);
       expect(merger.errorsEncountered, isTrue);
       expect(printedError, isTrue);
+    });
+    
+    test("resolveDirectoryOrExit should return an absolute path", () {      
+      Directory resolvedDirectory = merger.resolveDirectoryOrExit('.');      
+      expect(new Path.fromNative(resolvedDirectory.path).isAbsolute, isTrue);
+    });
+    
+    test("resolveDirectoryOrExit should check that a directory exists or exit with an error", () {
+      var printedError;
+      var exited;
+      
+      void _print(String s) {
+        expect(s, stringContainsInOrder([scriptName,
+                                         "FileIOException: Cannot retrieve full path for file 'this_should_not_exist'"]));
+        printedError = true;
+      }
+      
+      void _exit(int status) {
+        expect(status, 1);
+        exited = true;
+        throw new Exit();
+      }
+      
+      expect(() => merger.resolveDirectoryOrExit('this_should_not_exist', print: _print, exit: _exit), 
+          throwsA(new isInstanceOf<Exit>()));
+      expect(printedError, isTrue);
+      expect(exited, isTrue);
     });
     
     test("main should print usage and exit with status of 0 when you call it with --help", () {
@@ -281,6 +309,12 @@ void main() {
       expect(merger.deleteFirst, isFalse);
       merger.parseArguments(["--delete-first"], print: printNothing);
       expect(merger.deleteFirst, isTrue);
+    });
+    
+    test("parseArguments should resolve directories", () {
+      merger.parseArguments(['.', '.', 'irrelevant']);
+      expect(new Path.fromNative(merger.documentationDirectory.path).isAbsolute, isTrue);
+      expect(new Path.fromNative(merger.codeDirectory.path).isAbsolute, isTrue);
     });
 
     // This test is pretty high level. copyAndMergeDirectory has a test that

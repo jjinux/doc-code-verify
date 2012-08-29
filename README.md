@@ -66,9 +66,6 @@ To run the unittests:
 TODO
 ----
 
-It can't handle non-absolute directory names. Use File.fullPathSync to fix
-this.
-
 Handle symlinks in the documentation or code. Get rid of the place where I'm
 catching an exception to work around symlinks.
 

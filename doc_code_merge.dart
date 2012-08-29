@@ -222,12 +222,33 @@ class DocCodeMerger {
     }
 
     if (positionalArguments.length == 3) {
-      documentationDirectory = new Directory(positionalArguments[0]);
-      codeDirectory = new Directory(positionalArguments[1]);
+      documentationDirectory = resolveDirectoryOrExit(positionalArguments[0]);
+      codeDirectory = resolveDirectoryOrExit(positionalArguments[1]);
+      
+      // We can't resolve the outputDirectory yet since it probably doesn't
+      // exist. It turns out not to matter since we don't need to use
+      // path.relativeTo with the outputDirectory.
       outputDirectory = new Directory(positionalArguments[2]);
     } else {
       errorsEncountered = true;
       print("$scriptName: Expected 3 positional arguments\n${getUsage()}");
+    }
+  }
+
+  /**
+   * Resolve path to an absolute path and return a Directory.
+   * 
+   * If that's not possible, complain and exit with an error.
+   */
+  Directory resolveDirectoryOrExit(String path, [PrintFunction print = print,
+      ExitFunction exit = exit]) {
+    try {
+      String fullPath = new File(path).fullPathSync();
+      return new Directory(fullPath);
+    } catch (FileIOException e) {
+      print("$scriptName: $e");
+      exit(1);
+      throw new ExpectException("exit should not return");
     }
   }
   
