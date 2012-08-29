@@ -66,9 +66,6 @@ To run the unittests:
 TODO
 ----
 
-Handle symlinks in the documentation or code. Get rid of the place where I'm
-catching an exception to work around symlinks.
-
 It gets hopelessly confused by symlink loops. See
 (http://code.google.com/p/dart/issues/detail?id=4801). See also the "HACK" in
 this file.
@@ -103,3 +100,9 @@ whitespace, such as:
 	Simple one-liner <!-- MERGE oneLiner -->, and so is...
 
 There are some XXX's in the code.
+
+Known Limitations
+-----------------
+
+I silently ignore symlinks in the documentation. If you care why, grep for
+"symlink" in the source code.

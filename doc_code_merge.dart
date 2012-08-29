@@ -136,19 +136,19 @@ class DocCodeMerger {
     Path outputPath = new Path.fromNative(output.path);
     var writers = new List<Future>();
 
-    // Return the target path. If the path is private, return null.
+    // Return the target path. If that's not possible, return null.
     Path getOutputPath(String name) {
       Path path = new Path.fromNative(name);
       Path relativePath;
-      try {
-        relativePath = path.relativeTo(documentationPath);
-      } catch (NotImplementedException e) {
-        // XXX: This may be because of a symlink, or because the user gave us
-        // relative URLs we don't yet understand.
-        print("Skipping ${path.toNativePath()} because I can't see how it's relative to ${documentationPath.toNativePath()}");
-        print(e);
-        return null;
-      }
+      
+      // DirectoryLister insists on getting the realpath for symlinks, which
+      // causes path.relativeTo to fail and raise a NotImplementedException
+      // exception. I could complain, but since every Dart application that
+      // uses Dart is going to have symlinks in the packages directory,
+      // I'm just going to ignore them silently.     
+      if (!path.toNativePath().startsWith(documentationPath.toNativePath())) return null;
+      relativePath = path.relativeTo(documentationPath);
+      
       if (isPrivate(relativePath)) return null;
       return outputPath.join(relativePath);  
     }

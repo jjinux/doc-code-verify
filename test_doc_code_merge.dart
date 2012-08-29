@@ -149,6 +149,11 @@ void main() {
         More documentation
       """));
       expect(printedError, isTrue);
+      
+      // #BEGIN hello_world
+      // I'm adding this so that I can run doc_code_merge.dart on itself
+      // without encountering errors.
+      // #END hello_world
     });
     
     test('copyAndMergeDirectory should copy the source code and merge in the examples', () {
