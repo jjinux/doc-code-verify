@@ -59,3 +59,50 @@ Testing
 To run the unittests:
 
   dart test_doc_code_merge.dart
+
+TODO
+----
+
+Using --help should exit the program, even if there are other arguments.
+
+It can't handle non-absolute directory names.
+
+Handle symlinks in the documentation or code. Get rid of the place where I'm
+catching an exception to work around symlinks.
+
+Make it possible to configure the syntax.
+
+Support HTML output by wrapping the code in a pre block and HTML escaping it.
+
+Make it possible to ignore certain filetypes. E.g. ignore files that aren't
+source code.
+
+Make sure it works on simple files as well as directories.
+
+Handle:
+
+	Yes, dear? ./doc_code_merge.dart `pwd` `pwd` /tmp/output
+	doc_code_merge.dart: Could not prepare output directory `/tmp/output`: Directory already exists
+	You should either delete it or pass the --delete-first flag
+	Unhandled exception:
+	DirectoryIOException: Creation failed, path = /tmp/output (OS Error: File exists, errno = 17)
+
+Don't use # because it conflicts with Markdown.
+
+We currently have the problem that some of our documentation is in Markdown
+and some of it is in Docbook (which is XML). We have to behave differently for
+those two formats. For instance, when outputting XML, we need to escape the
+code. We also might want to wrap the code differently based on what we're
+generating (although Seth prefers to do the wrapping by hand).
+
+This code is better than what I have:
+
+	Path get scriptDir() =>
+      new Path.fromNative(new Options().script).directoryPath;
+
+We need to be able to merge examples in the middle of a line with no spurious
+whitespace, such as:
+
+	Simple one-liner <!-- MERGE oneLiner -->, and so is...
+
+There are some XXX's in the code.
