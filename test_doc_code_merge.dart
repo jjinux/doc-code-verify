@@ -196,18 +196,27 @@ void main() {
       expect(merger.errorsEncountered, isFalse);
     });
     
-    test("clearOutputDirectory complains if the directory does exist", () {
+    test("clearOutputDirectory complains and exits with error if the directory does exist", () {
       var printedError = false;
+      var exited = false;
       
       void _print(String s) {
         expect(s, equals("$scriptName: Could not prepare output directory `${new Directory.current().path}`: Directory already exists\n"
                          "You should either delete it or pass the --delete-first flag"));
         printedError = true;
       }
+      
+      void _exit(int status) {
+        expect(status, 1);
+        exited = true;
+        throw new Exit();
+      }
 
-      merger.clearOutputDirectory(new Directory.current(), print: _print);
+      expect(() => merger.clearOutputDirectory(new Directory.current(), print: _print, exit: _exit),
+          throwsA(new isInstanceOf<Exit>()));
       expect(merger.errorsEncountered, isTrue);
       expect(printedError, isTrue);
+      expect(exited, isTrue);
     });
     
     test("clearOutputDirectory should delete the directory if deleteFirst is true", () {

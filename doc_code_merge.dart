@@ -186,8 +186,9 @@ class DocCodeMerger {
    * Check that the output directory doesn't exist.
    * 
    * If deleteFirst is true, try to delete the directory if it exists.
+   * If deleteFirst is false, and the directory exists, complain and exit.
    */
-  void clearOutputDirectory(Directory outputDirectory, [PrintFunction print = print]) {
+  void clearOutputDirectory(Directory outputDirectory, [PrintFunction print = print, ExitFunction exit = exit]) {
     if (outputDirectory.existsSync()) {
       if (deleteFirst) {
         outputDirectory.deleteRecursivelySync();
@@ -195,6 +196,8 @@ class DocCodeMerger {
         errorsEncountered = true;
         print("$scriptName: Could not prepare output directory `${outputDirectory.path}`: Directory already exists\n"
               "You should either delete it or pass the --delete-first flag");
+        exit(1);
+        throw new ExpectException("exit should not return");        
       }
     }
   }

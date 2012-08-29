@@ -85,14 +85,6 @@ source code.
 
 Make sure it works on simple files as well as directories.
 
-Handle:
-
-	Yes, dear? ./doc_code_merge.dart `pwd` `pwd` /tmp/output
-	doc_code_merge.dart: Could not prepare output directory `/tmp/output`: Directory already exists
-	You should either delete it or pass the --delete-first flag
-	Unhandled exception:
-	DirectoryIOException: Creation failed, path = /tmp/output (OS Error: File exists, errno = 17)
-
 Don't use # because it conflicts with Markdown.
 
 We currently have the problem that some of our documentation is in Markdown
