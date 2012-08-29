@@ -1,3 +1,5 @@
+#!/usr/bin/env dart
+
 #library("doc_code_merge");
 #import('dart:io');
 
@@ -128,7 +130,10 @@ class DocCodeMerger {
       try {
         relativePath = path.relativeTo(documentationPath);
       } catch (NotImplementedException e) {
-        // Ignore symlinks.
+        // XXX: This may be because of a symlink, or because the user gave us
+        // relative URLs we don't yet understand.
+        print("Skipping ${path.toNativePath()} because I can't see how it's relative to ${documentationPath.toNativePath()}");
+        print(e);
         return null;
       }
       if (isPrivate(relativePath)) return null;
@@ -210,19 +215,44 @@ class DocCodeMerger {
   
   /// Return usage information.
   String getUsage() {
-    return """\
-usage: $scriptName [-h] [--help] [--delete-first] DOCUMENTATION CODE OUTPUT""";
+    return "usage: $scriptName [-h] [--help] [--delete-first] DOCUMENTATION CODE OUTPUT";
   }
   
   /**
-   * Return true if the path has a component that is ".".
+   * Return true if the path has a component that starts with ".".
    * 
    * We want to ignore files like .DS_Store and directories like .git.
    */
   bool isPrivate(Path path) {
-    return path.segments().some((segment) => segment.startsWith('.'));
+    return path.segments().some((segment) {
+      if (segment == '.') return false;
+      if (segment.startsWith('.')) return true; // Including '..'
+      return false;
+    });  
+  }
+  
+  /// This is a testable version of the main function.
+  Future<bool> main(List<String> arguments, [PrintFunction print = print]) {
+    parseArguments(arguments, print: print);
+    var completer = new Completer();
+    if (errorsEncountered) {
+      completer.complete(false);
+    } else {
+      scanDirectoryForExamples(codeDirectory)
+      .chain((result) => copyAndMergeDirectory(documentationDirectory, 
+          codeDirectory, outputDirectory, print: print))
+      .then((result) => completer.complete(true));
+    }
+    return completer.future;
   }
 }
 
 /// Take obj and do nothing.
 void printNothing(obj) {}
+
+void main() {
+  var merger = new DocCodeMerger();
+  merger.main(new Options().arguments).then((result) {
+    exit(merger.errorsEncountered ? 1 : 0);
+  }); 
+}

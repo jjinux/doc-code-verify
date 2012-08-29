@@ -164,8 +164,8 @@ void main() {
 
       Directory scriptDirectory = getScriptDirectory();
       
-      // expectAsync1 can't be called from within a "then" clause because that won't be called
-      // until after all the tests run.
+      // expectAsync1 can't be called from within a "then" clause because
+      // that won't be called until after all the tests run.
       var checkResults = expectAsync1((bool completed) {
         String scriptFilename = new Path.fromNative(new Options().script).filename;
         Path outputDirectory = new Path.fromNative(tempDir.path);
@@ -180,8 +180,7 @@ void main() {
         // this strange mix of async and sync code.
         tempDir.deleteRecursivelySync();
       });
-      
-      
+            
       merger.scanDirectoryForExamples(scriptDirectory)
       .chain((result) => merger.copyAndMergeDirectory(scriptDirectory,
           scriptDirectory, tempDir, print: printNothing))
@@ -260,5 +259,47 @@ void main() {
       merger.parseArguments(["--delete-first"], print: printNothing);
       expect(merger.deleteFirst, isTrue);
     });
-  });  
+
+    // This test is pretty high level. copyAndMergeDirectory has a test that
+    // is more thorough.
+    test("main does everything", () {
+      Directory scriptDirectory = getScriptDirectory();
+      Directory tempDir = new Directory("").createTempSync();
+     
+      // expectAsync1 can't be called from within a "then" clause because
+      // that won't be called until after all the tests run.
+      var checkResults = expectAsync1((bool result) {
+        
+        // XXX: If there is an exception, or something else weird happens, then
+        // the temp directory gets leaked. I can't figure out how to do it with
+        // this strange mix of async and sync code.
+        tempDir.deleteRecursivelySync();
+        
+        expect(result, isTrue);
+      });
+
+      merger.main(["--delete-first", scriptDirectory.path, scriptDirectory.path, tempDir.path], 
+          print: printNothing).then(checkResults);
+    });
+    
+    test("isPrivate should be false for '.'", () {
+      expect(merger.isPrivate(new Path.fromNative('.')), isFalse);      
+    });
+
+    test("isPrivate should be true for '..'", () {
+      expect(merger.isPrivate(new Path.fromNative('..')), isTrue);      
+    });
+
+    test("isPrivate should be true for '.git'", () {
+      expect(merger.isPrivate(new Path.fromNative('.git')), isTrue);      
+    });
+    
+    test("isPrivate should be true for 'foo/.git/bar'", () {
+      expect(merger.isPrivate(new Path.fromNative('foo/.git/bar')), isTrue);      
+    });
+    
+    test("isPrivate should be false for './foo/bar'", () {
+      expect(merger.isPrivate(new Path.fromNative('./foo/bar')), isFalse);      
+    });
+ });
 }
