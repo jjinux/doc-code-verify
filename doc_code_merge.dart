@@ -15,7 +15,7 @@ final scriptName = "doc_code_merge.dart";
 /**
  * [DocCodeMerger] merges documentation with code.
  * 
- * See the project README for more information.
+ * See the project README.md for more information.
  * 
  * There's a class-level [main] method that's fairly testable, and there's
  * also a top-level main function that isn't (since it has to deal with
