@@ -66,8 +66,6 @@ To run the unittests:
 TODO
 ----
 
-Using --help should exit the program, even if there are other arguments.
-
 It can't handle non-absolute directory names. Use File.fullPathSync to fix
 this.
 
