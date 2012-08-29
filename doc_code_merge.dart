@@ -21,9 +21,10 @@ final scriptName = "doc_code_merge.dart";
  */
 class DocCodeMerger {
   static const newlineRegExp = const RegExp(@"\r\n|\r|\n");
-  static const beginRegExp = const RegExp(@"#BEGIN +(\w+)");
-  static const endRegExp = const RegExp(@"#END +(\w+)");
-  static const mergeRegExp = const RegExp(@"#MERGE +(\w+)");
+  static const nameInParens = @"\(([^)]+)\)"; 
+  static const beginRegExp = const RegExp("BEGIN$nameInParens");
+  static const endRegExp = const RegExp("END$nameInParens");
+  static const mergeRegExp = const RegExp("MERGE$nameInParens");
   static const newline = "\n";
   static const encoding = Encoding.UTF_8;
   

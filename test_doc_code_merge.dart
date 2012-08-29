@@ -35,17 +35,23 @@ void main() {
       merger = new DocCodeMerger();
     });
     
+    test('the syntax for example names is pretty permissive', () {
+      expect(DocCodeMerger.beginRegExp.firstMatch("BEGIN(a b/c)"), isNotNull);
+      expect(DocCodeMerger.mergeRegExp.firstMatch("MERGE(a b/c)"), isNotNull);
+      expect(DocCodeMerger.endRegExp.firstMatch("END(a b/c)"), isNotNull);
+    });
+    
     test('examples is empty by default', () {
       expect(merger.examples.isEmpty(), isTrue);
     });
     
     test('scanForExamples updates examples', () {      
       merger.scanForExamples("""
-        // #BEGIN add
+        // BEGIN(add)
         num add(num a, num b) {
           return a + b;
         }
-        // #END add
+        // END(add)
         
         void main() {
           print("Hello, World!");
@@ -61,12 +67,12 @@ void main() {
     
     test('scanForExamples permits overlapping examples', () {
       merger.scanForExamples("""
-        // #BEGIN two_lines
+        // BEGIN(two_lines)
         line
-        // #BEGIN one_line
+        // BEGIN(one_line)
         line
-        // #END two_lines
-        // #END one_line
+        // END(two_lines)
+        // END(one_line)
         line
         line
       """);
@@ -83,14 +89,14 @@ void main() {
     
     test('scanForExamples concatenates examples with the same name', () {
       merger.scanForExamples("""
-        // #BEGIN example
+        // BEGIN(example)
         line
-        // #END example
+        // END(example)
         line
         line
-        // #BEGIN example
+        // BEGIN(example)
         line
-        // #END example
+        // END(example)
       """);
       
       expect(merger.examples["example"].toString(), equalsIgnoringWhitespace("""
@@ -100,9 +106,9 @@ void main() {
     });
     
     test('scanDirectoryForExamples can scan this directory for examples', () {
-      // #BEGIN thisTestIsSoMeta
+      // BEGIN(thisTestIsSoMeta)
       // meta meta meta
-      // #END thisTestIsSoMeta
+      // END(thisTestIsSoMeta)
       merger.scanDirectoryForExamples(getScriptDirectory()).then(expectAsync1((completed) {
         expect(merger.examples.length, greaterThan(1));
         expect(merger.examples["thisTestIsSoMeta"].toString(), equalsIgnoringWhitespace("""
@@ -113,13 +119,13 @@ void main() {
 
     test('mergeExamples merges in examples', () {
       merger.scanForExamples("""
-        // #BEGIN example
+        // BEGIN(example)
         Source code
-        // #END example
+        // END(example)
       """); 
       String merged = merger.mergeExamples("""
         Documentation
-        #MERGE example
+        MERGE(example)
         More documentation
       """);
       expect(merged, equalsIgnoringWhitespace("""
@@ -139,7 +145,7 @@ void main() {
 
       String merged = merger.mergeExamples("""
         Documentation
-        #MERGE hello_world
+        MERGE(hello_world)
         More documentation
       """, print: _print);
       expect(merger.errorsEncountered, isTrue);
@@ -150,19 +156,19 @@ void main() {
       """));
       expect(printedError, isTrue);
       
-      // #BEGIN hello_world
+      // BEGIN(hello_world)
       // I'm adding this so that I can run doc_code_merge.dart on itself
       // without encountering errors.
-      // #END hello_world
+      // END(hello_world)
     });
     
     test('copyAndMergeDirectory should copy the source code and merge in the examples', () {
-      // #BEGIN copyAndMergeDirectory
+      // BEGIN(copyAndMergeDirectory)
       // This is the copyAndMergeDirectory example.
-      // #END copyAndMergeDirectory
+      // END(copyAndMergeDirectory)
       //
       // Start of merge
-      // #MERGE copyAndMergeDirectory
+      // MERGE(copyAndMergeDirectory)
       // End of merge
 
       Directory tempDir = new Directory("").createTempSync();
