@@ -106,6 +106,9 @@ whitespace, such as:
 
 There are some XXX's in the code.
 
+Make sure things get printed to stderr using:
+stderr.writeString("Message").
+
 Known Limitations
 -----------------
 
