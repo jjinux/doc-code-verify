@@ -241,20 +241,30 @@ void main() {
       expect(printedError, isTrue);
     });
     
-    test("parseArguments can print usage", () {
+    test("main should print usage and exit with status of 0 when you call it with --help", () {
       var printedUsage;
-      
+      var exited;
+
       void _print(String s) {
         expect(s, stringContainsInOrder(["usage: $scriptName",
                                          "DOCUMENTATION CODE OUTPUT"]));
         printedUsage = true;
       }
+
+      void _exit(int status) {
+        expect(status, 0);
+        exited = true;
+        throw new Exit();
+      }
       
       ["--help", "-h"].forEach((arg) {
         printedUsage = false;
-        merger.parseArguments([arg], print: _print);
+        exited = false;
+        expect(() => merger.main(["--help"], print: _print, exit: _exit),
+            throwsA(new isInstanceOf<Exit>()));
         expect(merger.errorsEncountered, isFalse);
         expect(printedUsage, isTrue);
+        expect(exited, isTrue);
       });
     });
     

@@ -8,8 +8,6 @@
 
 #import('dart:io');
 
-typedef void PrintFunction(obj);
-
 final scriptName = "doc_code_merge.dart";
 
 /**
@@ -22,12 +20,12 @@ final scriptName = "doc_code_merge.dart";
  * the outside world).
  */
 class DocCodeMerger {
-  static final newlineRegExp = const RegExp(@"\r\n|\r|\n");
-  static final beginRegExp = const RegExp(@"#BEGIN +(\w+)");
-  static final endRegExp = const RegExp(@"#END +(\w+)");
-  static final mergeRegExp = const RegExp(@"#MERGE +(\w+)");
-  static final newline = "\n";
-  static final encoding = Encoding.UTF_8;
+  static const newlineRegExp = const RegExp(@"\r\n|\r|\n");
+  static const beginRegExp = const RegExp(@"#BEGIN +(\w+)");
+  static const endRegExp = const RegExp(@"#END +(\w+)");
+  static const mergeRegExp = const RegExp(@"#MERGE +(\w+)");
+  static const newline = "\n";
+  static const encoding = Encoding.UTF_8;
   
   Directory documentationDirectory;
   Directory codeDirectory;
@@ -202,13 +200,15 @@ class DocCodeMerger {
   }
   
   /// Parse command-line arguments.
-  void parseArguments(List<String> arguments, [PrintFunction print = print]) {
+  void parseArguments(List<String> arguments, [PrintFunction print = print,
+      ExitFunction exit = exit]) {
     var positionalArguments = <String>[];
     for (var i = 0; i < arguments.length; i++) {
       String arg = arguments[i];
       if (arg == "-h" || arg == "--help") {
         print(getUsage());
-        return;
+        exit(0);
+        throw new ExpectException("exit should not return");
       }
       if (arg == "--delete-first") {
         deleteFirst = true;
@@ -247,8 +247,9 @@ class DocCodeMerger {
   }
   
   /// This is a testable version of the main function.
-  Future<bool> main(List<String> arguments, [PrintFunction print = print]) {
-    parseArguments(arguments, print: print);
+  Future<bool> main(List<String> arguments, [PrintFunction print = print,
+      ExitFunction exit = exit]) {
+    parseArguments(arguments, print: print, exit: exit);
     var completer = new Completer();
     if (errorsEncountered) {
       completer.complete(false);
@@ -262,9 +263,6 @@ class DocCodeMerger {
   }
 }
 
-/// Take obj and do nothing.
-void printNothing(obj) {}
-
 /// Basically, create a DocCodeMerger object and call its main method.
 void main() {
   var merger = new DocCodeMerger();
@@ -272,3 +270,14 @@ void main() {
     exit(merger.errorsEncountered ? 1 : 0);
   }); 
 }
+
+/// This is stuff to make testing easier.
+typedef void PrintFunction(obj);
+
+/// Take obj and do nothing.
+void printNothing(obj) {}
+
+/// If you implement your own ExitFunction, you should throw a new Exit instance.
+typedef void ExitFunction(int status);
+
+class Exit implements Exception {}
