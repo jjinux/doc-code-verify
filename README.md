@@ -11,14 +11,14 @@ Usage
 Start by writing some documentation. You can use either a single file or a
 whole file hierarchy. The documentation can have lines that look like this:
 
-  #MERGE my_example_name
+	#MERGE my_example_name
 
 Then create a separate codebase. Again, it can be either a single file or a
 whole file hierarchy. Inside the code, you can have examples such as:
 
-  // #BEGIN my_example_name
-  Lots of source code
-  // #END my_example_name
+	// #BEGIN my_example_name
+	Lots of source code
+	// #END my_example_name
 
 Example blocks may overlap with one another. If two blocks share the same
 name, they'll be concatenated.
@@ -33,17 +33,17 @@ source code (especially Dart).
 
 Now, setup your environment:
 
-  export DART_SDK=.../dart/dart-sdk
-  export PATH=$PATH:$DART_SDK/bin
-  pub install
+	export DART_SDK=.../dart/dart-sdk
+	export PATH=$PATH:$DART_SDK/bin
+	pub install
 
-  # HACK: Work around: http://code.google.com/p/dart/issues/detail?id=4801
-  rm packages/doc-code-merge
+	# HACK: Work around: http://code.google.com/p/dart/issues/detail?id=4801
+	rm packages/doc-code-merge
 
 To create a copy of the documentation with examples from the source code
 merged into it, run:
 
-  dart doc_code_merge.dart DOCUMENTATION CODE OUTPUT
+	dart doc_code_merge.dart DOCUMENTATION CODE OUTPUT
 
 DOCUMENTATION and CODE (whether they are files or directories) will not be
 changed. OUTPUT will end up with the same structure as DOCUMENTATION. If
@@ -61,7 +61,7 @@ Testing
 
 To run the unittests:
 
-  dart test_doc_code_merge.dart
+	dart test_doc_code_merge.dart
 
 TODO
 ----
