@@ -1,12 +1,22 @@
 #!/usr/bin/env dart
 
 #library("doc_code_merge");
+
 #import('dart:io');
 
 typedef void PrintFunction(obj);
 
 final scriptName = "doc_code_merge.dart";
 
+/**
+ * [DocCodeMerger] merges documentation with code.
+ * 
+ * See the project README for more information.
+ * 
+ * There's a class-level [main] method that's fairly testable, and there's
+ * also a top-level main function that isn't (since it has to deal with
+ * the outside world).
+ */
 class DocCodeMerger {
   static final newlineRegExp = const RegExp(@"\r\n|\r|\n");
   static final beginRegExp = const RegExp(@"#BEGIN +(\w+)");
@@ -250,6 +260,7 @@ class DocCodeMerger {
 /// Take obj and do nothing.
 void printNothing(obj) {}
 
+/// Basically, create a DocCodeMerger object and call its main method.
 void main() {
   var merger = new DocCodeMerger();
   merger.main(new Options().arguments).then((result) {

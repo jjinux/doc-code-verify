@@ -65,7 +65,8 @@ TODO
 
 Using --help should exit the program, even if there are other arguments.
 
-It can't handle non-absolute directory names.
+It can't handle non-absolute directory names. Use File.fullPathSync to fix
+this.
 
 Handle symlinks in the documentation or code. Get rid of the place where I'm
 catching an exception to work around symlinks.
@@ -99,6 +100,8 @@ This code is better than what I have:
 
 	Path get scriptDir() =>
       new Path.fromNative(new Options().script).directoryPath;
+
+That may also help get rid of my hard-coded scriptName.
 
 We need to be able to merge examples in the middle of a line with no spurious
 whitespace, such as:
