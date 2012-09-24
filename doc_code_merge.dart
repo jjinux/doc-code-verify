@@ -246,7 +246,7 @@ class DocCodeMerger {
     try {
       String fullPath = new File(path).fullPathSync();
       return new Directory(fullPath);
-    } catch (FileIOException e) {
+    } on FileIOException catch(e) {
       print("$scriptName: $e");
       exit(1);
       throw new ExpectException("exit should not return");
