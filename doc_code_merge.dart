@@ -33,12 +33,14 @@ class DocCodeMerger {
   Directory documentationDirectory;
   Directory codeDirectory;
   Directory outputDirectory;
-  Map<String, StringBuffer> examples;
   bool errorsEncountered = false;
   bool deleteFirst = false;
-  
+
+  /// Each example has a name and a list of lines.
+  Map<String, List<String>> examples;
+
   DocCodeMerger() {
-    examples = new Map<String, StringBuffer>();
+    examples = new Map<String, List<String>>();
   }
   
   /// Scan input for examples and update [examples].
@@ -61,8 +63,8 @@ class DocCodeMerger {
       
       if (!openExamples.isEmpty()) {
         openExamples.forEach((exampleName) {
-          examples.putIfAbsent(exampleName, () => new StringBuffer());
-          examples[exampleName].addAll([line, newline]);
+          examples.putIfAbsent(exampleName, () => new List<String>());
+          examples[exampleName].add("$line$newline");
         });
       }
     });
@@ -99,28 +101,28 @@ class DocCodeMerger {
    */
   String mergeExamples(String documentation, [PrintFunction print = print]) {
     List<String> lines = documentation.split(newlineRegExp);
-    var output = new StringBuffer();
+    var output = new List<String>();
     lines.forEach((line) {
         
       Match mergeMatch = mergeRegExp.firstMatch(line);
       if (mergeMatch != null) {
         String exampleName = mergeMatch[1];
-        StringBuffer example = examples[exampleName];
+        List<String> example = examples[exampleName];
         
         if (example == null) {
           errorsEncountered = true;
           var error = "No such example: $exampleName";
           print("$scriptName: $error");
-          output.addAll(["ERROR: $error", newline]);
+          output.add("ERROR: $error$newline");
         } else {
-          output.add(example.toString());
+          output.addAll(example);
         }
         
         return;
       }
-      output.addAll([line, newline]);
+      output.add("$line$newline");
     });
-    return output.toString();
+    return Strings.concatAll(output);
   }
   
   /**

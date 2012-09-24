@@ -58,7 +58,7 @@ void main() {
         }
       """);
       
-      expect(merger.examples["add"].toString(), equalsIgnoringWhitespace("""
+      expect(Strings.concatAll(merger.examples["add"]), equalsIgnoringWhitespace("""
         num add(num a, num b) {
           return a + b;
         }
@@ -77,11 +77,11 @@ void main() {
         line
       """);
       
-      expect(merger.examples["one_line"].toString(), equalsIgnoringWhitespace("""
+      expect(Strings.concatAll(merger.examples["one_line"]), equalsIgnoringWhitespace("""
         line
       """));
 
-      expect(merger.examples["two_lines"].toString(), equalsIgnoringWhitespace("""
+      expect(Strings.concatAll(merger.examples["two_lines"]), equalsIgnoringWhitespace("""
         line
         line
       """));
@@ -99,7 +99,7 @@ void main() {
         // END(example)
       """);
       
-      expect(merger.examples["example"].toString(), equalsIgnoringWhitespace("""
+      expect(Strings.concatAll(merger.examples["example"]), equalsIgnoringWhitespace("""
         line
         line
       """));
@@ -111,7 +111,7 @@ void main() {
       // END(thisTestIsSoMeta)
       merger.scanDirectoryForExamples(getScriptDirectory()).then(expectAsync1((completed) {
         expect(merger.examples.length, greaterThan(1));
-        expect(merger.examples["thisTestIsSoMeta"].toString(), equalsIgnoringWhitespace("""
+        expect(Strings.concatAll(merger.examples["thisTestIsSoMeta"]), equalsIgnoringWhitespace("""
           // meta meta meta
         """));
       }));
@@ -364,7 +364,7 @@ void main() {
              equals(["1",
                      "2"]));
     });
-
+    
     test("unindentFilter unindents code where the first line is indented the most", () {
       expect(merger.unindentFilter(["\t    1",
                                     "\t  2",
@@ -373,7 +373,7 @@ void main() {
                      "2",
                      "  3"]));
     });
-
+    
     test("unindentFilter does nothing for unindented code", () {
       expect(merger.unindentFilter(["1",
                                     "2",
@@ -382,12 +382,12 @@ void main() {
                      "2",
                      "3"]));
     });
-
+    
     test("unindentFilter handles empty lists", () {
       expect(merger.unindentFilter([]),
              equals([]));
     });
-
+    
     test("unindentFilter does not try to handle inconsistent indentation", () {
       expect(merger.unindentFilter(["\t1",
                                     "  2",
@@ -398,14 +398,14 @@ void main() {
                      "    3"
                      "        4"]));
     });
-
+    
     test("unindentFilter handles really awkward short lines", () {
       expect(merger.unindentFilter(["    1",
                                     "2"]),
              equals(["    1",
                      "2"]));
     });
-
+    
     test("unindentFilter handles blank lines and lines with only indentation", () {
       expect(merger.unindentFilter(["  1",
                                     "",
