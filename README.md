@@ -104,7 +104,7 @@ whitespace, such as:
 
 	Simple one-liner <!-- MERGE oneLiner -->, and so is...
 
-There are some XXX's in the code.
+There are some TODO's in the code.
 
 Make sure things get printed to stderr using:
 stderr.writeString("Message").

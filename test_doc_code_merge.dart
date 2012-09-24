@@ -208,7 +208,7 @@ void main() {
                                                     "This is the copyAndMergeDirectory example.",
                                                     "End of merge"]));
 
-        // XXX: If there is an exception, or something else weird happens, then
+        // TODO(jjinux): If there is an exception, or something else weird happens, then
         // the temp directory gets leaked. I can't figure out how to do it with
         // this strange mix of async and sync code.
         tempDir.deleteRecursivelySync();
@@ -461,7 +461,7 @@ void main() {
       // that won't be called until after all the tests run.
       var checkResults = expectAsync1((bool result) {
         
-        // XXX: If there is an exception, or something else weird happens, then
+        // TODO(jjinux): If there is an exception, or something else weird happens, then
         // the temp directory gets leaked. I can't figure out how to do it with
         // this strange mix of async and sync code.
         tempDir.deleteRecursivelySync();
