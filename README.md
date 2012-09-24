@@ -68,7 +68,7 @@ Testing
 
 To run the unittests:
 
-	dart test_doc_code_merge.dart
+	dart --enable-checked-mode test_doc_code_merge.dart
 
 TODO
 ----
