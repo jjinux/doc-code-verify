@@ -328,6 +328,26 @@ void main() {
       expect(new Path.fromNative(merger.codeDirectory.path).isAbsolute, isTrue);
     });
 
+    test("isPrivate should be false for '.'", () {
+      expect(merger.isPrivate(new Path.fromNative('.')), isFalse);      
+    });
+
+    test("isPrivate should be true for '..'", () {
+      expect(merger.isPrivate(new Path.fromNative('..')), isTrue);      
+    });
+
+    test("isPrivate should be true for '.git'", () {
+      expect(merger.isPrivate(new Path.fromNative('.git')), isTrue);      
+    });
+    
+    test("isPrivate should be true for 'foo/.git/bar'", () {
+      expect(merger.isPrivate(new Path.fromNative('foo/.git/bar')), isTrue);      
+    });
+    
+    test("isPrivate should be false for './foo/bar'", () {
+      expect(merger.isPrivate(new Path.fromNative('./foo/bar')), isFalse);      
+    });
+
     // This test is pretty high level. copyAndMergeDirectory has a test that
     // is more thorough.
     test("main does everything", () {
@@ -348,26 +368,6 @@ void main() {
 
       merger.main(["--delete-first", scriptDirectory.path, scriptDirectory.path, tempDir.path], 
           print: printNothing).then(checkResults);
-    });
-    
-    test("isPrivate should be false for '.'", () {
-      expect(merger.isPrivate(new Path.fromNative('.')), isFalse);      
-    });
-
-    test("isPrivate should be true for '..'", () {
-      expect(merger.isPrivate(new Path.fromNative('..')), isTrue);      
-    });
-
-    test("isPrivate should be true for '.git'", () {
-      expect(merger.isPrivate(new Path.fromNative('.git')), isTrue);      
-    });
-    
-    test("isPrivate should be true for 'foo/.git/bar'", () {
-      expect(merger.isPrivate(new Path.fromNative('foo/.git/bar')), isTrue);      
-    });
-    
-    test("isPrivate should be false for './foo/bar'", () {
-      expect(merger.isPrivate(new Path.fromNative('./foo/bar')), isFalse);      
-    });
+    });    
   });
 }
