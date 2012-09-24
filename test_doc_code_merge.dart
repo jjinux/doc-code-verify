@@ -369,5 +369,5 @@ void main() {
     test("isPrivate should be false for './foo/bar'", () {
       expect(merger.isPrivate(new Path.fromNative('./foo/bar')), isFalse);      
     });
- });
+  });
 }
