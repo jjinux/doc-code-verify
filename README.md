@@ -79,18 +79,10 @@ this file.
 
 Make it possible to configure the syntax.
 
-Support HTML output by wrapping the code in a pre block and HTML escaping it.
-
 Make it possible to ignore certain filetypes. E.g. ignore files that aren't
 source code.
 
 Make sure it works on simple files as well as directories.
-
-We currently have the problem that some of our documentation is in Markdown
-and some of it is in Docbook (which is XML). We have to behave differently for
-those two formats. For instance, when outputting XML, we need to escape the
-code. We also might want to wrap the code differently based on what we're
-generating (although Seth prefers to do the wrapping by hand).
 
 This code is better than what I have:
 
@@ -102,7 +94,7 @@ That may also help get rid of my hard-coded scriptName.
 We need to be able to merge examples in the middle of a line with no spurious
 whitespace, such as:
 
-	Simple one-liner <!-- MERGE oneLiner -->, and so is...
+	Simple one-liner (MERGE(oneLiner)), and so is...
 
 There are some TODO's in the code.
 
