@@ -1,5 +1,7 @@
 name: doc-code-merge
 
 dependencies:
+  htmlescape:
+    sdk: htmlescape
   unittest:
     sdk: unittest

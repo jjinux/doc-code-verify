@@ -7,6 +7,7 @@
 #library("doc_code_merge");
 
 #import('dart:io');
+#import('package:htmlescape/htmlescape.dart');
 
 final scriptName = "doc_code_merge.dart";
 
@@ -27,6 +28,7 @@ class DocCodeMerger {
   static const mergeRegExp = const RegExp("MERGE$nameInParens");
   static const newline = "\n";
   static const encoding = Encoding.UTF_8;
+  static const indentation = "  ";
   
   Directory documentationDirectory;
   Directory codeDirectory;
@@ -269,6 +271,84 @@ class DocCodeMerger {
       if (segment.startsWith('.')) return true; // Including '..'
       return false;
     });  
+  }
+  
+  List<String> htmlEscapeFilter(List<String> lines) => lines.map(htmlEscape);
+  
+  List<String> indentFilter(List<String> lines) => lines.map((s) => "$indentation$s");
+
+  /**
+   * Remove the indentation from the given lines.
+   * 
+   * Only remove as much indentation as the line with the least amount of
+   * indentation.
+   */
+  List<String> unindentFilter(List<String> lines) {
+    // Make a copy so that we can modify it in place.
+    lines = new List<String>.from(lines);
+    
+    // Make sure there is at least one line.
+    if (!lines.isEmpty()) {
+    
+      // Figure out how much indentation the first line has.
+      var indentation = new List<String>();
+      for (String char in lines[0].splitChars()) {
+        if (char == " " || char == "\t") {
+          indentation.add(char);
+        } else {
+          break;
+        }      
+      }
+      
+      // Figure out the least amount of indentation any of the other lines has.
+      for (var i = 1; i < lines.length; i++) {
+        String line = lines[i];
+        List<String> chars = line.splitChars();
+        
+        // Lines that only have whitespace should be set to "" and ignored.
+        var whitespaceOnly = true;
+        for (var char in chars) {
+          if (char != " " && char != "\t") {
+            whitespaceOnly = false;
+            break;
+          }          
+        }
+        if (whitespaceOnly) {
+          lines[i] = "";          
+        } else {
+          
+          // If the line has something other than whitespace, see how its
+          // indentation compares to the least amount of indentation we've
+          // seen so far.
+          for (var j = 0; j < indentation.length && j < chars.length; j++) {
+            String char = chars[j];
+            if ((char != " " && char != "\t") ||
+                char != indentation[j]) {
+              
+              // We found a new line with less indentation.
+              indentation.removeRange(j, indentation.length - j);
+              break;
+            } 
+          }
+        }
+      }
+      
+      // Loop over all the lines, and remove the right amount of indentation.
+      for (var i = 0; i < lines.length; i++) {
+        String line = lines[i];
+        
+        // Ignore blank lines.
+        if (line != "") {
+          
+          // Otherwise, trim off the right amount of indentation.
+          List<String> chars = line.splitChars();
+          List<String> unindented = chars.getRange(indentation.length, chars.length - indentation.length);
+          lines[i] = Strings.concatAll(unindented);
+        }
+      }
+    }
+    
+    return lines;
   }
   
   /// This is a testable version of the main function.
