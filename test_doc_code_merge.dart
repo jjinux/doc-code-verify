@@ -134,6 +134,24 @@ void main() {
         More documentation
       """));
     });
+ 
+    test('mergeExamples applies filters', () {
+      merger.scanForExamples("""
+        // BEGIN(example)
+        <blink>Hi!</blink>
+        // END(example)
+      """); 
+      String merged = merger.mergeExamples("""
+        Documentation
+        MERGE(example)
+        More documentation
+      """, filters: [DocCodeMerger.htmlEscapeFilter]);
+      expect(merged, equalsIgnoringWhitespace("""
+        Documentation
+        &lt;blink&gt;Hi!&lt;/blink&gt;
+        More documentation
+      """));
+    });
     
     test('mergeExamples handles missing examples', () {
       var printedError = false;

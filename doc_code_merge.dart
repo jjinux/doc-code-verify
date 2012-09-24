@@ -112,29 +112,42 @@ class DocCodeMerger {
    *  - Print an error message
    *  - Put an error message in the documentation
    */
-  String mergeExamples(String documentation, [PrintFunction print = print]) {
+  String mergeExamples(String documentation,
+                       [List<Filter> filters = const [], PrintFunction print = print]) {
     List<String> lines = documentation.split(newlineRegExp);
     var output = new List<String>();
     lines.forEach((line) {
-        
+      
+      // If this isn't a merge line, just copy the line over unmodified.            
       Match mergeMatch = mergeRegExp.firstMatch(line);
-      if (mergeMatch != null) {
+      if (mergeMatch == null) {
+        output.add("$line$newline");
+      }
+      
+      // Otherwise, merge in the example.
+      else {
         String exampleName = mergeMatch[1];
-        List<String> example = examples[exampleName];
+        List<String> example = examples[exampleName];        
+        List<String> lines;
         
+        // Complain if we can't find the right example.
         if (example == null) {
           errorsEncountered = true;
           var error = "No such example: $exampleName";
           print("$scriptName: $error");
-          output.add("ERROR: $error$newline");
-        } else {
-          output.addAll(example);
+          lines = ["ERROR: $error$newline"];
         }
         
-        return;
+        // Otherwise, use the example we found.
+        else {
+          lines = example;          
+        }
+        
+        // Make sure to apply filters.
+        output.addAll(applyFilters(filters, lines));        
       }
-      output.add("$line$newline");
     });
+    
     return Strings.concatAll(output);
   }
   
@@ -186,7 +199,8 @@ class DocCodeMerger {
       String docText = new File(docFile).readAsTextSync(encoding);
       File outputFile = new File.fromPath(outputPath);
       OutputStream outputStream = outputFile.openOutputStream(FileMode.WRITE);
-      String outputText = mergeExamples(docText, print: print);
+      List<Filter> filters = getFilters(docFile);
+      String outputText = mergeExamples(docText, filters: filters, print: print);
       outputStream.writeString(outputText, encoding);
       outputStream.onClosed = () => completer.complete(true);
       outputStream.close();
