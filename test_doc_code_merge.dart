@@ -416,6 +416,14 @@ void main() {
                      "",
                      "  2"]));
     });
+    
+    test("getFilters should return the right filters for HTML", () {
+      List<Filter> filters = merger.getFilters("index.html");
+      List<String> filtered = merger.applyFilters(filters, ["  a > b;",
+                                                            "  c(&d);"]);
+      expect(filtered, equals(["a &gt; b;",
+                               "c(&amp;d);"]));
+    });
 
     // This test is pretty high level. copyAndMergeDirectory has a test that
     // is more thorough.

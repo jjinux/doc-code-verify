@@ -353,6 +353,19 @@ class DocCodeMerger {
     return lines;
   }
   
+  /// Given a filename, return a list of filters appropriate for that file.
+  List<Filter> getFilters(String filename) {
+    return [unindentFilter, htmlEscapeFilter];    
+  }
+  
+  /// Apply a list of filters to a list of lines.
+  List<String> applyFilters(List<Filter> filters, List<String> lines) {
+    for (var filter in filters) {
+      lines = filter(lines);
+    }
+    return lines;
+  }
+
   /// This is a testable version of the main function.
   Future<bool> main(List<String> arguments, [PrintFunction print = print,
       ExitFunction exit = exit]) {
@@ -388,3 +401,6 @@ void printNothing(obj) {}
 typedef void ExitFunction(int status);
 
 class Exit implements Exception {}
+
+/// A filter takes a list of lines and returns a list of lines.
+typedef List<String> Filter(List<String> lines);
