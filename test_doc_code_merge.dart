@@ -349,50 +349,50 @@ void main() {
     });
 
     test("htmlEscapeFilter escapes HTML", () {
-      expect(merger.htmlEscapeFilter(["<blink>", "hi", "</blink>"]),
+      expect(DocCodeMerger.htmlEscapeFilter(["<blink>", "hi", "</blink>"]),
              equals(["&lt;blink&gt;", "hi", "&lt;/blink&gt;"]));
     });
     
     test("indentFilter idents code", () {
-      expect(merger.indentFilter(["Hi", "There"]),
+      expect(DocCodeMerger.indentFilter(["Hi", "There"]),
              equals(["  Hi", "  There"]));
     });
     
     test("unindentFilter unindents code", () {
-      expect(merger.unindentFilter(["  1",
-                                    "  2"]),
+      expect(DocCodeMerger.unindentFilter(["  1",
+                                           "  2"]),
              equals(["1",
                      "2"]));
     });
     
     test("unindentFilter unindents code where the first line is indented the most", () {
-      expect(merger.unindentFilter(["\t    1",
-                                    "\t  2",
-                                    "\t    3"]),
+      expect(DocCodeMerger.unindentFilter(["\t    1",
+                                           "\t  2",
+                                           "\t    3"]),
              equals(["  1",
                      "2",
                      "  3"]));
     });
     
     test("unindentFilter does nothing for unindented code", () {
-      expect(merger.unindentFilter(["1",
-                                    "2",
-                                    "3"]),
+      expect(DocCodeMerger.unindentFilter(["1",
+                                           "2",
+                                           "3"]),
              equals(["1",
                      "2",
                      "3"]));
     });
     
     test("unindentFilter handles empty lists", () {
-      expect(merger.unindentFilter([]),
+      expect(DocCodeMerger.unindentFilter([]),
              equals([]));
     });
     
     test("unindentFilter does not try to handle inconsistent indentation", () {
-      expect(merger.unindentFilter(["\t1",
-                                    "  2",
-                                    "    3"
-                                    "        4"]),
+      expect(DocCodeMerger.unindentFilter(["\t1",
+                                           "  2",
+                                           "    3"
+                                           "        4"]),
              equals(["\t1",
                      "  2",
                      "    3"
@@ -400,17 +400,17 @@ void main() {
     });
     
     test("unindentFilter handles really awkward short lines", () {
-      expect(merger.unindentFilter(["    1",
-                                    "2"]),
+      expect(DocCodeMerger.unindentFilter(["    1",
+                                           "2"]),
              equals(["    1",
                      "2"]));
     });
     
     test("unindentFilter handles blank lines and lines with only indentation", () {
-      expect(merger.unindentFilter(["  1",
-                                    "",
-                                    " ",
-                                    "    2"]),
+      expect(DocCodeMerger.unindentFilter(["  1",
+                                           "",
+                                           " ",
+                                           "    2"]),
              equals(["1",
                      "",
                      "",
@@ -423,6 +423,14 @@ void main() {
                                                             "  c(&d);"]);
       expect(filtered, equals(["a &gt; b;",
                                "c(&amp;d);"]));
+    });
+
+    test("getFilters should return the right filters for plain text", () {
+      List<Filter> filters = merger.getFilters("plain.txt");
+      List<String> filtered = merger.applyFilters(filters, ["    >>> Hi",
+                                                            "    >>> There!"]);
+      expect(filtered, equals(["  >>> Hi",
+                               "  >>> There!"]));
     });
 
     // This test is pretty high level. copyAndMergeDirectory has a test that

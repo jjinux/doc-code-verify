@@ -30,6 +30,19 @@ class DocCodeMerger {
   static const encoding = Encoding.UTF_8;
   static const indentation = "  ";
   
+  /**
+   * This is a list of filter rules.
+   * 
+   * Each filter rule is applied in order. The first one that matches gets
+   * used.
+   */
+  static const List<FilterRule> filterRules = const [
+    const FilterRule(const RegExp(@"\.(html|xml)$"),
+                     const [unindentFilter, htmlEscapeFilter]),
+    const FilterRule(const RegExp(@".*$"),
+                     const [unindentFilter, indentFilter])
+  ];
+
   Directory documentationDirectory;
   Directory codeDirectory;
   Directory outputDirectory;
@@ -275,9 +288,9 @@ class DocCodeMerger {
     });  
   }
   
-  List<String> htmlEscapeFilter(List<String> lines) => lines.map(htmlEscape);
+  static List<String> htmlEscapeFilter(List<String> lines) => lines.map(htmlEscape);
   
-  List<String> indentFilter(List<String> lines) => lines.map((s) => "$indentation$s");
+  static List<String> indentFilter(List<String> lines) => lines.map((s) => "$indentation$s");
 
   /**
    * Remove the indentation from the given lines.
@@ -285,7 +298,7 @@ class DocCodeMerger {
    * Only remove as much indentation as the line with the least amount of
    * indentation.
    */
-  List<String> unindentFilter(List<String> lines) {
+  static List<String> unindentFilter(List<String> lines) {
     // Make a copy so that we can modify it in place.
     lines = new List<String>.from(lines);
     
@@ -355,7 +368,12 @@ class DocCodeMerger {
   
   /// Given a filename, return a list of filters appropriate for that file.
   List<Filter> getFilters(String filename) {
-    return [unindentFilter, htmlEscapeFilter];    
+    for (var rule in filterRules) {
+      if (rule.regExp.hasMatch(filename)) {
+        return rule.filters;
+      }
+    }
+    return [];
   }
   
   /// Apply a list of filters to a list of lines.
@@ -404,3 +422,15 @@ class Exit implements Exception {}
 
 /// A filter takes a list of lines and returns a list of lines.
 typedef List<String> Filter(List<String> lines);
+
+/**
+ * A filter rule contains two things:
+ * 
+ *  - A RegExp to match against file names
+ *  - A list of filters to apply
+ */
+class FilterRule {
+  final RegExp regExp;
+  final List<Filter> filters;
+  const FilterRule(this.regExp, this.filters);
+}
