@@ -23,7 +23,8 @@ class DocCodeMerger {
   static const nameInParens = @"\(([^)]+)\)"; 
   static const beginRegExp = const RegExp("BEGIN$nameInParens");
   static const endRegExp = const RegExp("END$nameInParens");
-  static const mergeRegExp = const RegExp("MERGE$nameInParens");
+  static const mergeBlockRegExp = const RegExp("MERGE$nameInParens");
+  static const inlineMergeRegExp = const RegExp("\\(MERGE$nameInParens\\)");
   static const newline = "\n";
   static const encoding = Encoding.UTF_8;
   static const indentation = "  ";
@@ -104,11 +105,10 @@ class DocCodeMerger {
   /**
    * Merge examples into the given documentation and return it.
    * 
-   * If the documentation refers to an example that doesn't exist:
+   * Remember, there are two types of merge statements:
    * 
-   *  - Set errorsEncountered to true
-   *  - Print an error message
-   *  - Put an error message in the documentation
+   *  - Merge blocks
+   *  - Inline merges
    */
   String mergeExamples(String documentation,
                        [List<Filter> filters = const [], PrintFunction print = print]) {
@@ -116,37 +116,84 @@ class DocCodeMerger {
     var output = new List<String>();
     lines.forEach((line) {
       
-      // If this isn't a merge line, just copy the line over unmodified.            
-      Match mergeMatch = mergeRegExp.firstMatch(line);
-      if (mergeMatch == null) {
-        output.add("$line$newline");
+      // Look for inline merges first since they take precedence. There may
+      // be more than one inline merge per line.
+      if (inlineMergeRegExp.hasMatch(line)) {
+        var tokenizer = new RegExp("${inlineMergeRegExp.pattern}|(.)");
+        var linePieces = new List<String>();
+        for (var match in tokenizer.allMatches(line)) {
+          String piece = match.group(0);
+          
+          // If it's a standalone character, just append it to linePieces.
+          if (piece.length == 1) {
+            linePieces.add(piece);
+          }
+          
+          // Otherwise, it's time to do a merge.
+          else {
+            String exampleName = match[1];
+            List<String> lines = lookupExample(exampleName,
+                filters: filters, print: print);
+
+            // Since it's an inline merge, compress all of the lines into one
+            // line and trim the beginning and end.
+            lines = lines.map((line) => line.trim());
+            String joined = Strings.join(lines, " ");
+            linePieces.add(joined);
+          }          
+        }
+        
+        String fullLine = Strings.concatAll(linePieces);
+        output.add("$fullLine$newline");
+        return;
       }
       
-      // Otherwise, merge in the example.
-      else {
-        String exampleName = mergeMatch[1];
-        List<String> example = examples[exampleName];        
-        List<String> lines;
-        
-        // Complain if we can't find the right example.
-        if (example == null) {
-          errorsEncountered = true;
-          var error = "No such example: $exampleName";
-          print("$scriptName: $error");
-          lines = ["ERROR: $error$newline"];
-        }
-        
-        // Otherwise, use the example we found.
-        else {
-          lines = example;          
-        }
-        
-        // Make sure to apply filters.
-        output.addAll(applyFilters(filters, lines));        
+      // Now look for merge blocks.            
+      Match match = mergeBlockRegExp.firstMatch(line);
+      if (match != null) {
+        String exampleName = match[1];
+        List<String> lines = lookupExample(exampleName,
+            filters: filters, print: print);
+        output.addAll(lines);
+        return;
       }
+      
+      // If this isn't a merge line, just copy the line over unmodified.
+      output.add("$line$newline");
     });
     
     return Strings.concatAll(output);
+  }
+  
+  /**
+   * Lookup the given example and return it after applying filters.
+   *   
+   * If the documentation refers to an example that doesn't exist:
+   * 
+   *  - Set errorsEncountered to true
+   *  - Print an error message
+   *  - Translate the example to an error message
+   */
+  List<String> lookupExample(String exampleName,
+      [List<Filter> filters = const [], PrintFunction print = print]) {
+    List<String> example = examples[exampleName];        
+    List<String> lines;
+    
+    // Complain if we can't find the right example.
+    if (example == null) {
+      errorsEncountered = true;
+      var error = "No such example: $exampleName";
+      print("$scriptName: $error");
+      lines = ["ERROR: $error$newline"];
+    }
+    
+    // Otherwise, use the example we found.
+    else {
+      lines = example;          
+    }
+    
+    // Make sure to apply filters.
+    return applyFilters(filters, lines);       
   }
   
   /**

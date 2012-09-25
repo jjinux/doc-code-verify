@@ -43,9 +43,15 @@ Details
 
 To get usage, run: doc_code_merge.dart --help
 
-The syntax is line-oriented. I.e. each directive should be on its own line.
-However, putting other things on the line, such as comment markers, is
-generally okay.
+In general, the syntax is line-oriented. I.e. each directive should be on its
+own line. However, putting other things on the line, such as comment markers,
+is generally okay.
+
+If you want to merge an example in the middle of a line and automatically trim
+whitespace around the example, use this syntax (notice the parenthesis around
+the MERGE):
+
+	This line shows how to merge a (MERGE(small_example)) inline.
 
 Example names can contain anything, except a closing parenthesis. They can
 even contain whitespace, but whitespace is significant!
@@ -83,11 +89,6 @@ Make it possible to ignore certain filetypes. E.g. ignore files that aren't
 source code.
 
 Make sure it works on simple files as well as directories.
-
-We need to be able to merge examples in the middle of a line with no spurious
-whitespace, such as:
-
-	Simple one-liner (MERGE(oneLiner)), and so is...
 
 There are some TODO's in the code.
 

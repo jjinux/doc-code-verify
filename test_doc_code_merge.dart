@@ -36,8 +36,12 @@ void main() {
     
     test('the syntax for example names is pretty permissive', () {
       expect(DocCodeMerger.beginRegExp.firstMatch("BEGIN(a b/c)"), isNotNull);
-      expect(DocCodeMerger.mergeRegExp.firstMatch("MERGE(a b/c)"), isNotNull);
+      expect(DocCodeMerger.mergeBlockRegExp.firstMatch("MERGE(a b/c)"), isNotNull);
       expect(DocCodeMerger.endRegExp.firstMatch("END(a b/c)"), isNotNull);
+    });
+
+    test('correctly matches inline merges', () {
+      expect(DocCodeMerger.inlineMergeRegExp.firstMatch("(MERGE(example))"), isNotNull);  
     });
     
     test('examples is empty by default', () {
@@ -133,7 +137,21 @@ void main() {
         More documentation
       """));
     });
- 
+
+    test('mergeExamples merges in inline examples', () {
+      merger.scanForExamples("""
+        // BEGIN(small_example)
+        <small_example>
+        // END(small_example)
+      """); 
+      String merged = merger.mergeExamples("""
+        Look at <(MERGE(small_example))> and <(MERGE(small_example))>.
+      """);
+      expect(merged, equalsIgnoringWhitespace("""
+        Look at <<small_example>> and <<small_example>>.
+      """));
+    });
+
     test('mergeExamples applies filters', () {
       merger.scanForExamples("""
         // BEGIN(example)
