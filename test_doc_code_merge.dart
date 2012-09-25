@@ -388,7 +388,7 @@ void main() {
     
     test("indentFilter idents code", () {
       expect(DocCodeMerger.indentFilter(["Hi", "There"]),
-             equals(["  Hi", "  There"]));
+             equals(["\tHi", "\tThere"]));
     });
     
     test("unindentFilter unindents code", () {
@@ -462,8 +462,8 @@ void main() {
       List<Filter> filters = merger.getFilters("plain.txt");
       List<String> filtered = merger.applyFilters(filters, ["    >>> Hi",
                                                             "    >>> There!"]);
-      expect(filtered, equals(["  >>> Hi",
-                               "  >>> There!"]));
+      expect(filtered, equals(["\t>>> Hi",
+                               "\t>>> There!"]));
     });
 
     // This test is pretty high level. copyAndMergeDirectory has a test that

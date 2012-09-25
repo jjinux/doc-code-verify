@@ -27,7 +27,7 @@ class DocCodeMerger {
   static const inlineMergeRegExp = const RegExp("\\(MERGE$nameInParens\\)");
   static const newline = "\n";
   static const encoding = Encoding.UTF_8;
-  static const indentation = "  ";
+  static const indentation = "\t";
   
   /**
    * This is a list of filter rules.
