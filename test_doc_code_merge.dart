@@ -22,17 +22,16 @@ void callWithTemporaryDirectorySync(void callback(Directory temp)) {
   }
 }
 
-/// Return this script's directory.
-Directory getScriptDirectory() {
-  return new File(new Options().script).directorySync();
-}
-
 void main() {
   group('DocCodeMerger', () {
     DocCodeMerger merger;
     
     setUp(() {
       merger = new DocCodeMerger();
+    });
+    
+    test("scriptName should be doc_code_merge.dart", () {
+      expect(scriptName, equals("doc_code_merge.dart"));
     });
     
     test('the syntax for example names is pretty permissive', () {
@@ -109,7 +108,7 @@ void main() {
       // BEGIN(thisTestIsSoMeta)
       // meta meta meta
       // END(thisTestIsSoMeta)
-      merger.scanDirectoryForExamples(getScriptDirectory()).then(expectAsync1((completed) {
+      merger.scanDirectoryForExamples(scriptDir).then(expectAsync1((completed) {
         expect(merger.examples.length, greaterThan(1));
         expect(Strings.concatAll(merger.examples["thisTestIsSoMeta"]), equalsIgnoringWhitespace("""
           // meta meta meta
@@ -194,8 +193,6 @@ void main() {
       // Deleting and recreating a temporary directory is just slightly
       // dangerous, but this test won't be running as root.
       merger.deleteFirst = true;
-
-      Directory scriptDirectory = getScriptDirectory();
       
       // expectAsync1 can't be called from within a "then" clause because
       // that won't be called until after all the tests run.
@@ -214,9 +211,9 @@ void main() {
         tempDir.deleteRecursivelySync();
       });
             
-      merger.scanDirectoryForExamples(scriptDirectory)
-      .chain((result) => merger.copyAndMergeDirectory(scriptDirectory,
-          scriptDirectory, tempDir, print: printNothing))
+      merger.scanDirectoryForExamples(scriptDir)
+      .chain((result) => merger.copyAndMergeDirectory(scriptDir,
+          scriptDir, tempDir, print: printNothing))
       .then(checkResults);
     });
 
@@ -257,7 +254,7 @@ void main() {
     });
     
     test("parseArguments accepts exactly 3 positional arguments", () {
-      String thisDir = getScriptDirectory().path;
+      String thisDir = scriptDir.path;
       merger.parseArguments([thisDir, thisDir, "OUTPUT"]);
       expect(merger.errorsEncountered, isFalse);
       expect(merger.documentationDirectory.path, equals(thisDir));
@@ -454,7 +451,6 @@ void main() {
     // This test is pretty high level. copyAndMergeDirectory has a test that
     // is more thorough.
     test("main does everything", () {
-      Directory scriptDirectory = getScriptDirectory();
       Directory tempDir = new Directory("").createTempSync();
      
       // expectAsync1 can't be called from within a "then" clause because
@@ -469,7 +465,7 @@ void main() {
         expect(result, isTrue);
       });
 
-      merger.main(["--delete-first", scriptDirectory.path, scriptDirectory.path, tempDir.path], 
+      merger.main(["--delete-first", scriptDir.path, scriptDir.path, tempDir.path], 
           print: printNothing).then(checkResults);
     });    
   });

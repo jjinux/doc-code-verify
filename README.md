@@ -84,13 +84,6 @@ source code.
 
 Make sure it works on simple files as well as directories.
 
-This code is better than what I have:
-
-	Path get scriptDir() =>
-      new Path.fromNative(new Options().script).directoryPath;
-
-That may also help get rid of my hard-coded scriptName.
-
 We need to be able to merge examples in the middle of a line with no spurious
 whitespace, such as:
 

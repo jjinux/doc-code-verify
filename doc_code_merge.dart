@@ -9,8 +9,6 @@
 #import('dart:io');
 #import('package:htmlescape/htmlescape.dart');
 
-final scriptName = "doc_code_merge.dart";
-
 /**
  * [DocCodeMerger] merges documentation with code.
  * 
@@ -422,6 +420,9 @@ void main() {
     exit(merger.errorsEncountered ? 1 : 0);
   }); 
 }
+
+final scriptName = "doc_code_merge.dart";
+Directory get scriptDir() => new File(new Options().script).directorySync();
 
 /// This is stuff to make testing easier.
 typedef void PrintFunction(obj);
