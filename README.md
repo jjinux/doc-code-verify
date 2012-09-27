@@ -63,12 +63,6 @@ source code (especially Dart).
 Example blocks may overlap with one another. If two blocks share the same
 name, they'll be concatenated.
 
-Developing
-----------
-
-To work on doc-code-merge, you'll need to set DartEditor >> Preferences >>
-Editor >> Package directory to doc-code-merge/packages.
-
 Testing
 -------
 
