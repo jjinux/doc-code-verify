@@ -134,11 +134,14 @@ class DocCodeMerger {
             String exampleName = match[1];
             List<String> lines = lookupExample(exampleName,
                 filters: filters, print: print);
-
-            // Since it's an inline merge, compress all of the lines into one
-            // line and trim the beginning and end.
-            lines = lines.map((line) => line.trim());
-            String joined = Strings.join(lines, " ");
+            
+            // Make a copy, and trim the first and last lines
+            // so that it merges inline cleanly.
+            lines = new List<String>.from(lines);
+            lines[0] = ltrim(lines[0]);
+            lines[lines.length - 1] = rtrim(lines[lines.length - 1]);
+            
+            String joined = Strings.join(lines, "");
             linePieces.add(joined);
           }          
         }
@@ -495,4 +498,14 @@ class FilterRule {
   final RegExp regExp;
   final List<Filter> filters;
   const FilterRule(this.regExp, this.filters);
+}
+
+/// Return s without the beginning whitespace.
+String ltrim(String s) {
+  return s.replaceFirst(const RegExp(r"^\s+"), "");
+}
+
+/// Return s without the trailing whitespace.
+String rtrim(String s) {
+  return s.replaceFirst(const RegExp(r"\s+$"), "");
 }

@@ -151,6 +151,24 @@ void main() {
         Look at <<small_example>> and <<small_example>>.
       """));
     });
+    
+    test('mergeExamples handles multiline inline examples', () {
+      merger.scanForExamples("""
+        // BEGIN(multiline_inline)
+        if (something) {
+          print("Hi");
+        }
+        // END(multiline_inline)
+      """); 
+      String merged = merger.mergeExamples(
+          "<programlisting>(MERGE(multiline_inline))</programlisting>",
+          filters: [DocCodeMerger.unindentFilter]);
+      
+      // I need to be really anal about whitespace for this test.
+      expect(merged, equals("""<programlisting>if (something) {
+  print("Hi");
+}</programlisting>\n"""));
+    });
 
     test('mergeExamples applies filters', () {
       merger.scanForExamples("""
@@ -485,6 +503,14 @@ void main() {
 
       merger.main(["--delete-first", scriptDir.path, scriptDir.path, tempDir.path], 
           print: printNothing).then(checkResults);
-    });    
+    });
+    
+    test("ltrim trims the left side of a string", () {
+      expect(ltrim(" \tfoo\t "), equals("foo\t "));
+    });
+    
+    test("rtrim trims the right side of a string", () {
+      expect(rtrim(" \tfoo\t "), equals(" \tfoo"));
+    });
   });
 }
