@@ -146,7 +146,7 @@ void main() {
       """); 
       String merged = merger.mergeExamples("""
         Look at <(MERGE(small_example))> and <(MERGE(small_example))>.
-      """);
+      """, filters: [DocCodeMerger.unindentFilter]);
       expect(merged, equalsIgnoringWhitespace("""
         Look at <<small_example>> and <<small_example>>.
       """));
@@ -467,7 +467,7 @@ void main() {
                      "",
                      "  2"]));
     });
-    
+
     test("getFilters should return the right filters for HTML", () {
       List<Filter> filters = merger.getFilters("index.html");
       List<String> filtered = merger.applyFilters(filters, ["  a > b;",

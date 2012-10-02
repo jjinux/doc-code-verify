@@ -76,7 +76,7 @@ class DocCodeMerger {
       if (!openExamples.isEmpty()) {
         openExamples.forEach((exampleName) {
           examples.putIfAbsent(exampleName, () => new List<String>());
-          examples[exampleName].add("$line$newline");
+          examples[exampleName].add(line);
         });
       }
     });
@@ -135,13 +135,12 @@ class DocCodeMerger {
             List<String> lines = lookupExample(exampleName,
                 filters: filters, print: print);
             
-            // Make a copy, and trim the first and last lines
-            // so that it merges inline cleanly.
+            // Make a copy, and trim the last line so that it merges inline cleanly.
             lines = new List<String>.from(lines);
-            lines[0] = ltrim(lines[0]);
             lines[lines.length - 1] = rtrim(lines[lines.length - 1]);
             
-            String joined = Strings.join(lines, "");
+            // Don't use a newline on the last line.
+            String joined = Strings.join(lines, newline);
             linePieces.add(joined);
           }          
         }
@@ -157,7 +156,9 @@ class DocCodeMerger {
         String exampleName = match[1];
         List<String> lines = lookupExample(exampleName,
             filters: filters, print: print);
-        output.addAll(lines);
+        for (var line in lines) {
+          output.add("$line$newline");
+        }
         return;
       }
       
