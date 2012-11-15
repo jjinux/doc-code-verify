@@ -2,13 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-#import('dart:io');
-#import('package:unittest/unittest.dart');
-#import('doc_code_merge.dart');
+import 'dart:io';
+import 'package:unittest/unittest.dart';
+import 'doc_code_merge.dart';
 
 /**
  * Call a callback with a temporary directory.
- * 
+ *
  * Delete it once the callback is done.
  */
 void callWithTemporaryDirectorySync(void callback(Directory temp)) {
@@ -25,15 +25,15 @@ void callWithTemporaryDirectorySync(void callback(Directory temp)) {
 void main() {
   group('DocCodeMerger', () {
     DocCodeMerger merger;
-    
+
     setUp(() {
       merger = new DocCodeMerger();
     });
-    
+
     test("scriptName should be doc_code_merge.dart", () {
       expect(scriptName, equals("doc_code_merge.dart"));
     });
-    
+
     test('the syntax for example names is pretty permissive', () {
       expect(DocCodeMerger.beginRegExp.firstMatch("BEGIN(a b/c)"), isNotNull);
       expect(DocCodeMerger.mergeBlockRegExp.firstMatch("MERGE(a b/c)"), isNotNull);
@@ -41,33 +41,33 @@ void main() {
     });
 
     test('correctly matches inline merges', () {
-      expect(DocCodeMerger.inlineMergeRegExp.firstMatch("(MERGE(example))"), isNotNull);  
+      expect(DocCodeMerger.inlineMergeRegExp.firstMatch("(MERGE(example))"), isNotNull);
     });
-    
+
     test('examples is empty by default', () {
-      expect(merger.examples.isEmpty(), isTrue);
+      expect(merger.examples.isEmpty, isTrue);
     });
-    
-    test('scanForExamples updates examples', () {      
+
+    test('scanForExamples updates examples', () {
       merger.scanForExamples("""
         // BEGIN(add)
         num add(num a, num b) {
           return a + b;
         }
         // END(add)
-        
+
         void main() {
           print("Hello, World!");
         }
       """);
-      
+
       expect(Strings.concatAll(merger.examples["add"]), equalsIgnoringWhitespace("""
         num add(num a, num b) {
           return a + b;
         }
       """));
     });
-    
+
     test('scanForExamples permits overlapping examples', () {
       merger.scanForExamples("""
         // BEGIN(two_lines)
@@ -79,7 +79,7 @@ void main() {
         line
         line
       """);
-      
+
       expect(Strings.concatAll(merger.examples["one_line"]), equalsIgnoringWhitespace("""
         line
       """));
@@ -89,7 +89,7 @@ void main() {
         line
       """));
     });
-    
+
     test('scanForExamples concatenates examples with the same name', () {
       merger.scanForExamples("""
         // BEGIN(example)
@@ -101,13 +101,13 @@ void main() {
         line
         // END(example)
       """);
-      
+
       expect(Strings.concatAll(merger.examples["example"]), equalsIgnoringWhitespace("""
         line
         line
       """));
     });
-    
+
     test('scanDirectoryForExamples can scan this directory for examples', () {
       // BEGIN(thisTestIsSoMeta)
       // meta meta meta
@@ -125,7 +125,7 @@ void main() {
         // BEGIN(example)
         Source code
         // END(example)
-      """); 
+      """);
       String merged = merger.mergeExamples("""
         Documentation
         MERGE(example)
@@ -143,7 +143,7 @@ void main() {
         // BEGIN(small_example)
         <small_example>
         // END(small_example)
-      """); 
+      """);
       String merged = merger.mergeExamples("""
         Look at <(MERGE(small_example))> and <(MERGE(small_example))>.
       """, filters: [DocCodeMerger.unindentFilter]);
@@ -151,7 +151,7 @@ void main() {
         Look at <<small_example>> and <<small_example>>.
       """));
     });
-    
+
     test('mergeExamples handles multiline inline examples', () {
       merger.scanForExamples("""
         // BEGIN(multiline_inline)
@@ -159,11 +159,11 @@ void main() {
           print("Hi");
         }
         // END(multiline_inline)
-      """); 
+      """);
       String merged = merger.mergeExamples(
           "<programlisting>(MERGE(multiline_inline))</programlisting>",
           filters: [DocCodeMerger.unindentFilter]);
-      
+
       // I need to be really anal about whitespace for this test.
       expect(merged, equals("""<programlisting>if (something) {
   print("Hi");
@@ -175,7 +175,7 @@ void main() {
         // BEGIN(example)
         <blink>Hi!</blink>
         // END(example)
-      """); 
+      """);
       String merged = merger.mergeExamples("""
         Documentation
         MERGE(example)
@@ -187,10 +187,10 @@ void main() {
         More documentation
       """));
     });
-    
+
     test('mergeExamples handles missing examples', () {
       var printedError = false;
-      
+
       void _print(String s) {
         expect(s, equals("$scriptName: No such example: hello_world"));
         printedError = true;
@@ -208,13 +208,13 @@ void main() {
         More documentation
       """));
       expect(printedError, isTrue);
-      
+
       // BEGIN(hello_world)
       // I'm adding this so that I can run doc_code_merge.dart on itself
       // without encountering errors.
       // END(hello_world)
     });
-    
+
     test('copyAndMergeDirectory should copy the source code and merge in the examples', () {
       // BEGIN(copyAndMergeDirectory)
       // This is the copyAndMergeDirectory example.
@@ -225,11 +225,11 @@ void main() {
       // End of merge
 
       Directory tempDir = new Directory("").createTempSync();
-            
+
       // Deleting and recreating a temporary directory is just slightly
       // dangerous, but this test won't be running as root.
       merger.deleteFirst = true;
-      
+
       // expectAsync1 can't be called from within a "then" clause because
       // that won't be called until after all the tests run.
       var checkResults = expectAsync1((bool completed) {
@@ -246,7 +246,7 @@ void main() {
         // this strange mix of async and sync code.
         tempDir.deleteRecursivelySync();
       });
-            
+
       merger.scanDirectoryForExamples(scriptDir)
       .chain((result) => merger.copyAndMergeDirectory(scriptDir,
           scriptDir, tempDir, print: printNothing))
@@ -257,17 +257,17 @@ void main() {
       merger.clearOutputDirectory(new Directory("this_should_not_exist"));
       expect(merger.errorsEncountered, isFalse);
     });
-    
+
     test("clearOutputDirectory complains and exits with error if the directory does exist", () {
       var printedError = false;
       var exited = false;
-      
+
       void _print(String s) {
         expect(s, equals("$scriptName: Could not prepare output directory `${new Directory.current().path}`: Directory already exists\n"
                          "You should either delete it or pass the --delete-first flag"));
         printedError = true;
       }
-      
+
       void _exit(int status) {
         expect(status, 1);
         exited = true;
@@ -280,15 +280,15 @@ void main() {
       expect(printedError, isTrue);
       expect(exited, isTrue);
     });
-    
+
     test("clearOutputDirectory should delete the directory if deleteFirst is true", () {
       callWithTemporaryDirectorySync((tempDir) {
         merger.deleteFirst = true;
         merger.clearOutputDirectory(tempDir);
-        expect(merger.errorsEncountered, isFalse);        
+        expect(merger.errorsEncountered, isFalse);
       });
     });
-    
+
     test("parseArguments accepts exactly 3 positional arguments", () {
       String thisDir = scriptDir.path;
       merger.parseArguments([thisDir, thisDir, "OUTPUT"]);
@@ -297,49 +297,49 @@ void main() {
       expect(merger.codeDirectory.path, equals(thisDir));
       expect(merger.outputDirectory.path, equals(new Directory("OUTPUT").path));
     });
-    
+
     test("parseArguments complains if there aren't exactly 3 positional arguments", () {
       var printedError = false;
-     
+
       void _print(String s) {
         expect(s, stringContainsInOrder(["$scriptName: Expected 3 positional arguments",
                                          "usage: $scriptName",
                                          "DOCUMENTATION CODE OUTPUT"]));
         printedError = true;
       }
-      
+
       merger.parseArguments([], print: _print);
       expect(merger.errorsEncountered, isTrue);
       expect(printedError, isTrue);
     });
-    
-    test("resolveDirectoryOrExit should return an absolute path", () {      
-      Directory resolvedDirectory = merger.resolveDirectoryOrExit('.');      
+
+    test("resolveDirectoryOrExit should return an absolute path", () {
+      Directory resolvedDirectory = merger.resolveDirectoryOrExit('.');
       expect(new Path.fromNative(resolvedDirectory.path).isAbsolute, isTrue);
     });
-    
+
     test("resolveDirectoryOrExit should check that a directory exists or exit with an error", () {
       var printedError;
       var exited;
-      
+
       void _print(String s) {
         expect(s, stringContainsInOrder([scriptName,
                                          "FileIOException: Cannot retrieve full path for file 'this_should_not_exist'"]));
         printedError = true;
       }
-      
+
       void _exit(int status) {
         expect(status, 1);
         exited = true;
         throw new Exit();
       }
-      
-      expect(() => merger.resolveDirectoryOrExit('this_should_not_exist', print: _print, exit: _exit), 
+
+      expect(() => merger.resolveDirectoryOrExit('this_should_not_exist', print: _print, exit: _exit),
           throwsA(new isInstanceOf<Exit>()));
       expect(printedError, isTrue);
       expect(exited, isTrue);
     });
-    
+
     test("main should print usage and exit with status of 0 when you call it with --help", () {
       var printedUsage;
       var exited;
@@ -355,7 +355,7 @@ void main() {
         exited = true;
         throw new Exit();
       }
-      
+
       ["--help", "-h"].forEach((arg) {
         printedUsage = false;
         exited = false;
@@ -366,13 +366,13 @@ void main() {
         expect(exited, isTrue);
       });
     });
-    
+
     test("parseArguments can set the --delete-first flag", () {
       expect(merger.deleteFirst, isFalse);
       merger.parseArguments(["--delete-first"], print: printNothing);
       expect(merger.deleteFirst, isTrue);
     });
-    
+
     test("parseArguments should resolve directories", () {
       merger.parseArguments(['.', '.', 'irrelevant']);
       expect(new Path.fromNative(merger.documentationDirectory.path).isAbsolute, isTrue);
@@ -380,42 +380,42 @@ void main() {
     });
 
     test("isPrivate should be false for '.'", () {
-      expect(merger.isPrivate(new Path.fromNative('.')), isFalse);      
+      expect(merger.isPrivate(new Path.fromNative('.')), isFalse);
     });
 
     test("isPrivate should be true for '..'", () {
-      expect(merger.isPrivate(new Path.fromNative('..')), isTrue);      
+      expect(merger.isPrivate(new Path.fromNative('..')), isTrue);
     });
 
     test("isPrivate should be true for '.git'", () {
-      expect(merger.isPrivate(new Path.fromNative('.git')), isTrue);      
+      expect(merger.isPrivate(new Path.fromNative('.git')), isTrue);
     });
-    
+
     test("isPrivate should be true for 'foo/.git/bar'", () {
-      expect(merger.isPrivate(new Path.fromNative('foo/.git/bar')), isTrue);      
+      expect(merger.isPrivate(new Path.fromNative('foo/.git/bar')), isTrue);
     });
-    
+
     test("isPrivate should be false for './foo/bar'", () {
-      expect(merger.isPrivate(new Path.fromNative('./foo/bar')), isFalse);      
+      expect(merger.isPrivate(new Path.fromNative('./foo/bar')), isFalse);
     });
 
     test("htmlEscapeFilter escapes HTML", () {
       expect(DocCodeMerger.htmlEscapeFilter(["<blink>", "hi", "</blink>"]),
              equals(["&lt;blink&gt;", "hi", "&lt;/blink&gt;"]));
     });
-    
+
     test("indentFilter idents code", () {
       expect(DocCodeMerger.indentFilter(["Hi", "There"]),
              equals(["\tHi", "\tThere"]));
     });
-    
+
     test("unindentFilter unindents code", () {
       expect(DocCodeMerger.unindentFilter(["  1",
                                            "  2"]),
              equals(["1",
                      "2"]));
     });
-    
+
     test("unindentFilter unindents code where the first line is indented the most", () {
       expect(DocCodeMerger.unindentFilter(["\t    1",
                                            "\t  2",
@@ -424,7 +424,7 @@ void main() {
                      "2",
                      "  3"]));
     });
-    
+
     test("unindentFilter does nothing for unindented code", () {
       expect(DocCodeMerger.unindentFilter(["1",
                                            "2",
@@ -433,12 +433,12 @@ void main() {
                      "2",
                      "3"]));
     });
-    
+
     test("unindentFilter handles empty lists", () {
       expect(DocCodeMerger.unindentFilter([]),
              equals([]));
     });
-    
+
     test("unindentFilter does not try to handle inconsistent indentation", () {
       expect(DocCodeMerger.unindentFilter(["\t1",
                                            "  2",
@@ -449,14 +449,14 @@ void main() {
                      "    3"
                      "        4"]));
     });
-    
+
     test("unindentFilter handles really awkward short lines", () {
       expect(DocCodeMerger.unindentFilter(["    1",
                                            "2"]),
              equals(["    1",
                      "2"]));
     });
-    
+
     test("unindentFilter handles blank lines and lines with only indentation", () {
       expect(DocCodeMerger.unindentFilter(["  1",
                                            "",
@@ -488,27 +488,27 @@ void main() {
     // is more thorough.
     test("main does everything", () {
       Directory tempDir = new Directory("").createTempSync();
-     
+
       // expectAsync1 can't be called from within a "then" clause because
       // that won't be called until after all the tests run.
       var checkResults = expectAsync1((bool result) {
-        
+
         // TODO(jjinux): If there is an exception, or something else weird happens, then
         // the temp directory gets leaked. I can't figure out how to do it with
         // this strange mix of async and sync code.
         tempDir.deleteRecursivelySync();
-        
+
         expect(result, isTrue);
       });
 
-      merger.main(["--delete-first", scriptDir.path, scriptDir.path, tempDir.path], 
+      merger.main(["--delete-first", scriptDir.path, scriptDir.path, tempDir.path],
           print: printNothing).then(checkResults);
     });
-    
+
     test("ltrim trims the left side of a string", () {
       expect(ltrim(" \tfoo\t "), equals("foo\t "));
     });
-    
+
     test("rtrim trims the right side of a string", () {
       expect(rtrim(" \tfoo\t "), equals(" \tfoo"));
     });
