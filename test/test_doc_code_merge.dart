@@ -4,8 +4,9 @@
 
 import 'dart:io';
 import 'package:unittest/unittest.dart';
-// TODO(adam): turn into library.
-import '../bin/doc_code_merge.dart';
+import 'package:doccodemerge/doc_code_merger_console.dart';
+
+Directory get scriptDir => new File(new Options().script).directorySync();
 
 /**
  * Call a callback with a temporary directory.
@@ -23,16 +24,18 @@ void callWithTemporaryDirectorySync(void callback(Directory temp)) {
   }
 }
 
+final scriptName = "doc_code_merge.dart";
+
 void main() {
   group('DocCodeMerger', () {
     DocCodeMerger merger;
 
     setUp(() {
-      merger = new DocCodeMerger();
+      merger = new DocCodeMerger(scriptName);
     });
 
     test("scriptName should be doc_code_merge.dart", () {
-      expect(scriptName, equals("doc_code_merge.dart"));
+      expect(merger.scriptName, equals("doc_code_merge.dart"));
     });
 
     test('the syntax for example names is pretty permissive', () {
