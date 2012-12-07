@@ -19,15 +19,15 @@ import 'package:htmlescape/htmlescape.dart';
  * the outside world).
  */
 class DocCodeMerger {
-  static const newlineRegExp = const RegExp(r"\r\n|\r|\n");
-  static const nameInParens = r"\(([^)]+)\)";
-  static const beginRegExp = const RegExp("BEGIN$nameInParens");
-  static const endRegExp = const RegExp("END$nameInParens");
-  static const mergeBlockRegExp = const RegExp("MERGE$nameInParens");
-  static const inlineMergeRegExp = const RegExp("\\(MERGE$nameInParens\\)");
-  static const newline = "\n";
-  static const encoding = Encoding.UTF_8;
-  static const indentation = "\t";
+  static final newlineRegExp = new RegExp(r"\r\n|\r|\n");
+  static final nameInParens = r"\(([^)]+)\)";
+  static final beginRegExp = new RegExp("BEGIN$nameInParens");
+  static final endRegExp = new RegExp("END$nameInParens");
+  static final mergeBlockRegExp = new RegExp("MERGE$nameInParens");
+  static final inlineMergeRegExp = new RegExp("\\(MERGE$nameInParens\\)");
+  static final newline = "\n";
+  static final encoding = Encoding.UTF_8;
+  static final indentation = "\t";
 
   /**
    * This is a list of filter rules.
@@ -35,11 +35,11 @@ class DocCodeMerger {
    * Each filter rule is applied in order. The first one that matches gets
    * used.
    */
-  static const List<FilterRule> filterRules = const [
-    const FilterRule(const RegExp(r"\.(html|xml)$"),
-                     const [unindentFilter, htmlEscapeFilter]),
-    const FilterRule(const RegExp(r".*$"),
-                     const [unindentFilter, indentFilter])
+  static final List<FilterRule> filterRules = [
+    new FilterRule(new RegExp(r"\.(html|xml)$"),
+                   [unindentFilter, htmlEscapeFilter]),
+    new FilterRule(new RegExp(r".*$"),
+                   [unindentFilter, indentFilter])
   ];
 
   Directory documentationDirectory;
@@ -95,7 +95,7 @@ class DocCodeMerger {
       Path pathPath = new Path.fromNative(path);  // :)
       if (isPrivate(pathPath)) return;
       Path filenameAsPath = new Path.fromNative(pathPath.filename);
-      var sourceCode = new File(path).readAsTextSync(encoding);
+      var sourceCode = new File(path).readAsStringSync(encoding);
       scanForExamples(sourceCode);
     };
     lister.onDone = (done) => completer.complete(true);
@@ -245,7 +245,7 @@ class DocCodeMerger {
       if (outputPath == null) return;
       var completer = new Completer();
       writers.add(completer.future);
-      String docText = new File(docFile).readAsTextSync(encoding);
+      String docText = new File(docFile).readAsStringSync(encoding);
       File outputFile = new File.fromPath(outputPath);
       OutputStream outputStream = outputFile.openOutputStream(FileMode.WRITE);
       List<Filter> filters = getFilters(docFile);
@@ -272,7 +272,7 @@ class DocCodeMerger {
   void clearOutputDirectory(Directory outputDirectory, {PrintFunction print: print, ExitFunction exit: exit}) {
     if (outputDirectory.existsSync()) {
       if (deleteFirst) {
-        outputDirectory.deleteRecursivelySync();
+        outputDirectory.deleteSync(recursive: true);
       } else {
         errorsEncountered = true;
         print("$scriptName: Could not prepare output directory `${outputDirectory.path}`: Directory already exists\n"
@@ -503,10 +503,10 @@ class FilterRule {
 
 /// Return s without the beginning whitespace.
 String ltrim(String s) {
-  return s.replaceFirst(const RegExp(r"^\s+"), "");
+  return s.replaceFirst(new RegExp(r"^\s+"), "");
 }
 
 /// Return s without the trailing whitespace.
 String rtrim(String s) {
-  return s.replaceFirst(const RegExp(r"\s+$"), "");
+  return s.replaceFirst(new RegExp(r"\s+$"), "");
 }

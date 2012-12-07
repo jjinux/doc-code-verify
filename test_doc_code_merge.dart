@@ -17,7 +17,7 @@ void callWithTemporaryDirectorySync(void callback(Directory temp)) {
     callback(temp);
   } finally {
     if (temp.existsSync()) {
-      temp.deleteRecursivelySync();
+      temp.deleteSync(recursive: true);
     }
   }
 }
@@ -236,7 +236,7 @@ void main() {
         String scriptFilename = new Path.fromNative(new Options().script).filename;
         Path outputDirectory = new Path.fromNative(tempDir.path);
         Path mergedFile = outputDirectory.append(scriptFilename);
-        String mergedSource = new File.fromPath(mergedFile).readAsTextSync(DocCodeMerger.encoding);
+        String mergedSource = new File.fromPath(mergedFile).readAsStringSync(DocCodeMerger.encoding);
         expect(mergedSource, stringContainsInOrder(["Start of merge",
                                                     "This is the copyAndMergeDirectory example.",
                                                     "End of merge"]));
@@ -244,7 +244,7 @@ void main() {
         // TODO(jjinux): If there is an exception, or something else weird happens, then
         // the temp directory gets leaked. I can't figure out how to do it with
         // this strange mix of async and sync code.
-        tempDir.deleteRecursivelySync();
+        tempDir.deleteSync(recursive: true);
       });
 
       merger.scanDirectoryForExamples(scriptDir)
@@ -496,8 +496,8 @@ void main() {
         // TODO(jjinux): If there is an exception, or something else weird happens, then
         // the temp directory gets leaked. I can't figure out how to do it with
         // this strange mix of async and sync code.
-        tempDir.deleteRecursivelySync();
-
+        tempDir.deleteSync(recursive: true);
+        
         expect(result, isTrue);
       });
 
