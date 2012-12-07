@@ -4,7 +4,9 @@
 
 import 'dart:io';
 import 'package:unittest/unittest.dart';
-import 'doc_code_merge.dart';
+import 'package:doc_code_merge/doc_code_merger.dart';
+
+Directory get scriptDir => new File(new Options().script).directorySync();
 
 /**
  * Call a callback with a temporary directory.
@@ -31,7 +33,7 @@ void main() {
     });
 
     test("scriptName should be doc_code_merge.dart", () {
-      expect(scriptName, equals("doc_code_merge.dart"));
+      expect(merger.scriptName, equals("doc_code_merge.dart"));
     });
 
     test('the syntax for example names is pretty permissive', () {
@@ -192,7 +194,7 @@ void main() {
       var printedError = false;
 
       void _print(String s) {
-        expect(s, equals("$scriptName: No such example: hello_world"));
+        expect(s, equals("doc_code_merge.dart: No such example: hello_world"));
         printedError = true;
       }
 
@@ -263,7 +265,7 @@ void main() {
       var exited = false;
 
       void _print(String s) {
-        expect(s, equals("$scriptName: Could not prepare output directory `${new Directory.current().path}`: Directory already exists\n"
+        expect(s, equals("doc_code_merge.dart: Could not prepare output directory `${new Directory.current().path}`: Directory already exists\n"
                          "You should either delete it or pass the --delete-first flag"));
         printedError = true;
       }
@@ -302,8 +304,8 @@ void main() {
       var printedError = false;
 
       void _print(String s) {
-        expect(s, stringContainsInOrder(["$scriptName: Expected 3 positional arguments",
-                                         "usage: $scriptName",
+        expect(s, stringContainsInOrder(["doc_code_merge.dart: Expected 3 positional arguments",
+                                         "usage: doc_code_merge.dart",
                                          "DOCUMENTATION CODE OUTPUT"]));
         printedError = true;
       }
@@ -323,7 +325,7 @@ void main() {
       var exited;
 
       void _print(String s) {
-        expect(s, stringContainsInOrder([scriptName,
+        expect(s, stringContainsInOrder(["doc_code_merge.dart",
                                          "FileIOException: Cannot retrieve full path for file 'this_should_not_exist'"]));
         printedError = true;
       }
@@ -345,7 +347,7 @@ void main() {
       var exited;
 
       void _print(String s) {
-        expect(s, stringContainsInOrder(["usage: $scriptName",
+        expect(s, stringContainsInOrder(["usage: doc_code_merge.dart",
                                          "DOCUMENTATION CODE OUTPUT"]));
         printedUsage = true;
       }
@@ -497,7 +499,7 @@ void main() {
         // the temp directory gets leaked. I can't figure out how to do it with
         // this strange mix of async and sync code.
         tempDir.deleteSync(recursive: true);
-        
+
         expect(result, isTrue);
       });
 
