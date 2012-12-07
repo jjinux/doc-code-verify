@@ -7,7 +7,7 @@
 library doc_code_merge;
 
 import 'dart:io';
-import 'package:doc_code_merge/console.dart';
+import 'package:doc_code_merge/doc_code_merger.dart';
 
 /// Basically, create a DocCodeMerger object and call its main method.
 void main() {
