@@ -111,7 +111,7 @@ class DocCodeMerger {
    *  - Inline merges
    */
   String mergeExamples(String documentation,
-                       {List<Filter> filters: const [], print: print}) {
+                       {List<Filter> filters: const [], PrintFunction print: print}) {
     List<String> lines = documentation.split(newlineRegExp);
     var output = new List<String>();
     lines.forEach((line) {
