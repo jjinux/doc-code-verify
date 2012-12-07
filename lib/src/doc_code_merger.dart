@@ -5,6 +5,20 @@
 part of doc_code_merger;
 
 /**
+ * Escapes HTML-special characters of [text] so that the result can be
+ * included verbatim in HTML source code, either in an element body or in an
+ * attribute value.
+ */
+String htmlEscape(String text) {
+  // TODO(efortuna): A more efficient implementation.
+  return text.replaceAll("&", "&amp;")
+             .replaceAll("<", "&lt;")
+             .replaceAll(">", "&gt;")
+             .replaceAll('"', "&quot;")
+             .replaceAll("'", "&apos;");
+}
+
+/**
  * [DocCodeMerger] merges documentation with code.
  *
  * See the project README.md for more information.
@@ -14,27 +28,26 @@ part of doc_code_merger;
  * the outside world).
  */
 class DocCodeMerger {
-  final newlineRegExp = new RegExp(r"\r\n|\r|\n");
+  static final newlineRegExp = new RegExp(r"\r\n|\r|\n");
   static const nameInParens = r"\(([^)]+)\)";
   static final beginRegExp = new RegExp("BEGIN$nameInParens");
   static final endRegExp = new RegExp("END$nameInParens");
   static final mergeBlockRegExp = new RegExp("MERGE$nameInParens");
   static final inlineMergeRegExp = new RegExp("\\(MERGE$nameInParens\\)");
-  static const newline = "\n";
-  static const encoding = Encoding.UTF_8;
-  static const indentation = "\t";
+  static final newline = "\n";
+  static final encoding = Encoding.UTF_8;
+  static final indentation = "\t";
   String scriptName;
+  
   /**
    * This is a list of filter rules.
    *
    * Each filter rule is applied in order. The first one that matches gets
    * used.
    */
-  static List<FilterRule> filterRules = [
-    new FilterRule(new RegExp(r"\.(html|xml)$"),
-                     const [unindentFilter, htmlEscapeFilter]),
-    new FilterRule(new RegExp(r".*$"),
-                     const [unindentFilter, indentFilter])
+  static final List<FilterRule> filterRules = [
+    new FilterRule(new RegExp(r"\.(html|xml)$"), [unindentFilter, htmlEscapeFilter]),
+    new FilterRule(new RegExp(r".*$"), [unindentFilter, indentFilter])
   ];
 
   Directory documentationDirectory;
@@ -46,7 +59,7 @@ class DocCodeMerger {
   /// Each example has a name and a list of lines.
   Map<String, List<String>> examples;
 
-  DocCodeMerger([this.scriptName = "DocCodeMerger"]) {
+  DocCodeMerger({this.scriptName: "doc_code_merge.dart"}) {
     examples = new Map<String, List<String>>();
   }
 

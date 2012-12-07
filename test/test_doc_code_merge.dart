@@ -24,14 +24,12 @@ void callWithTemporaryDirectorySync(void callback(Directory temp)) {
   }
 }
 
-final scriptName = "doc_code_merge.dart";
-
 void main() {
   group('DocCodeMerger', () {
     DocCodeMerger merger;
 
     setUp(() {
-      merger = new DocCodeMerger(scriptName);
+      merger = new DocCodeMerger();
     });
 
     test("scriptName should be doc_code_merge.dart", () {
@@ -196,7 +194,7 @@ void main() {
       var printedError = false;
 
       void _print(String s) {
-        expect(s, equals("$scriptName: No such example: hello_world"));
+        expect(s, equals("doc_code_merge.dart: No such example: hello_world"));
         printedError = true;
       }
 
@@ -267,7 +265,7 @@ void main() {
       var exited = false;
 
       void _print(String s) {
-        expect(s, equals("$scriptName: Could not prepare output directory `${new Directory.current().path}`: Directory already exists\n"
+        expect(s, equals("doc_code_merge.dart: Could not prepare output directory `${new Directory.current().path}`: Directory already exists\n"
                          "You should either delete it or pass the --delete-first flag"));
         printedError = true;
       }
@@ -306,8 +304,8 @@ void main() {
       var printedError = false;
 
       void _print(String s) {
-        expect(s, stringContainsInOrder(["$scriptName: Expected 3 positional arguments",
-                                         "usage: $scriptName",
+        expect(s, stringContainsInOrder(["doc_code_merge.dart: Expected 3 positional arguments",
+                                         "usage: doc_code_merge.dart",
                                          "DOCUMENTATION CODE OUTPUT"]));
         printedError = true;
       }
@@ -327,7 +325,7 @@ void main() {
       var exited;
 
       void _print(String s) {
-        expect(s, stringContainsInOrder([scriptName,
+        expect(s, stringContainsInOrder(["doc_code_merge.dart",
                                          "FileIOException: Cannot retrieve full path for file 'this_should_not_exist'"]));
         printedError = true;
       }
@@ -349,7 +347,7 @@ void main() {
       var exited;
 
       void _print(String s) {
-        expect(s, stringContainsInOrder(["usage: $scriptName",
+        expect(s, stringContainsInOrder(["usage: doc_code_merge.dart",
                                          "DOCUMENTATION CODE OUTPUT"]));
         printedUsage = true;
       }
