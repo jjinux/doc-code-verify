@@ -4,7 +4,7 @@
 
 import 'dart:io';
 import 'package:unittest/unittest.dart';
-import 'package:doccodemerge/doc_code_merger_console.dart';
+import 'package:doc_code_merge/doc_code_merger_console.dart';
 
 Directory get scriptDir => new File(new Options().script).directorySync();
 

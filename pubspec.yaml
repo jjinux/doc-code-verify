@@ -1,7 +1,5 @@
-name: doccodemerge
+name: doc_code_merge
 
 dependencies:
-  htmlescape:
-    sdk: htmlescape
-  unittest:
-    sdk: unittest
+  htmlescape: any
+  unittest: '>=0.2.7'

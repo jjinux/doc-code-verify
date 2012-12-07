@@ -8,7 +8,7 @@ library doc_code_merge;
 
 import 'dart:io';
 import 'package:htmlescape/htmlescape.dart';
-import 'package:doccodemerge/doc_code_merger_console.dart';
+import 'package:doc_code_merge/doc_code_merger_console.dart';
 
 final scriptName = "doc_code_merge.dart";
 /// Basically, create a DocCodeMerger object and call its main method.
