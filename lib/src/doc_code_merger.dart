@@ -1,13 +1,22 @@
-#!/usr/bin/env dart
-
 // Copyright (c) 2012, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library doc_code_merge;
+part of doc_code_merger;
 
-import 'dart:io';
-import 'package:htmlescape/htmlescape.dart';
+/**
+ * Escapes HTML-special characters of [text] so that the result can be
+ * included verbatim in HTML source code, either in an element body or in an
+ * attribute value.
+ */
+String htmlEscape(String text) {
+  // TODO(efortuna): A more efficient implementation.
+  return text.replaceAll("&", "&amp;")
+             .replaceAll("<", "&lt;")
+             .replaceAll(">", "&gt;")
+             .replaceAll('"', "&quot;")
+             .replaceAll("'", "&apos;");
+}
 
 /**
  * [DocCodeMerger] merges documentation with code.
@@ -20,7 +29,7 @@ import 'package:htmlescape/htmlescape.dart';
  */
 class DocCodeMerger {
   static final newlineRegExp = new RegExp(r"\r\n|\r|\n");
-  static final nameInParens = r"\(([^)]+)\)";
+  static const nameInParens = r"\(([^)]+)\)";
   static final beginRegExp = new RegExp("BEGIN$nameInParens");
   static final endRegExp = new RegExp("END$nameInParens");
   static final mergeBlockRegExp = new RegExp("MERGE$nameInParens");
@@ -28,7 +37,8 @@ class DocCodeMerger {
   static final newline = "\n";
   static final encoding = Encoding.UTF_8;
   static final indentation = "\t";
-
+  String scriptName;
+  
   /**
    * This is a list of filter rules.
    *
@@ -36,10 +46,8 @@ class DocCodeMerger {
    * used.
    */
   static final List<FilterRule> filterRules = [
-    new FilterRule(new RegExp(r"\.(html|xml)$"),
-                   [unindentFilter, htmlEscapeFilter]),
-    new FilterRule(new RegExp(r".*$"),
-                   [unindentFilter, indentFilter])
+    new FilterRule(new RegExp(r"\.(html|xml)$"), [unindentFilter, htmlEscapeFilter]),
+    new FilterRule(new RegExp(r".*$"), [unindentFilter, indentFilter])
   ];
 
   Directory documentationDirectory;
@@ -51,7 +59,7 @@ class DocCodeMerger {
   /// Each example has a name and a list of lines.
   Map<String, List<String>> examples;
 
-  DocCodeMerger() {
+  DocCodeMerger({this.scriptName: "doc_code_merge.dart"}) {
     examples = new Map<String, List<String>>();
   }
 
@@ -463,17 +471,6 @@ class DocCodeMerger {
     return completer.future;
   }
 }
-
-/// Basically, create a DocCodeMerger object and call its main method.
-void main() {
-  var merger = new DocCodeMerger();
-  merger.main(new Options().arguments).then((result) {
-    exit(merger.errorsEncountered ? 1 : 0);
-  });
-}
-
-final scriptName = "doc_code_merge.dart";
-Directory get scriptDir => new File(new Options().script).directorySync();
 
 /// This is stuff to make testing easier.
 typedef void PrintFunction(obj);
