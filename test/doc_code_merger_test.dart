@@ -109,6 +109,26 @@ void main() {
         line
       """));
     });
+    
+    test("scanForExamples complains if you misspell the name of an END", () {
+      var printedError = false;
+
+      void _print(String s) {
+        expect(s, equals("doc_code_merge.dart: BEGIN for `wrong_name` not found; spelling error?"));
+        printedError = true;
+      }
+
+      merger.scanForExamples("""
+        // BEGIN(some_name)
+        line
+        // END(wrong_name)
+      """, print: _print);
+      
+      expect(merger.errorsEncountered, isTrue);
+      expect(printedError, isTrue);
+      expect(Strings.concatAll(merger.examples["some_name"]),
+             equalsIgnoringWhitespace("line"));
+    });
 
     test('scanDirectoryForExamples can scan this directory for examples', () {
       // BEGIN(thisTestIsSoMeta)

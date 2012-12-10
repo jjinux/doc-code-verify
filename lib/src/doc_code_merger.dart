@@ -50,7 +50,7 @@ class DocCodeMerger {
   }
 
   /// Scan input for examples and update [examples].
-  void scanForExamples(String sourceCode) {
+  void scanForExamples(String sourceCode, {PrintFunction print: print}) {
     List<String> lines = sourceCode.split(newlineRegExp);
     var openExamples = new Set<String>();
     lines.forEach((line) {
@@ -63,7 +63,11 @@ class DocCodeMerger {
 
       Match endMatch = endRegExp.firstMatch(line);
       if (endMatch != null) {
-        openExamples.remove(endMatch[1]);
+        var name = endMatch[1];
+        if (!openExamples.remove(name)) {
+          errorsEncountered = true;
+          print("$scriptName: BEGIN for `$name` not found; spelling error?");
+        }
         return;
       }
 
