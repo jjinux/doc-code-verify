@@ -5,20 +5,6 @@
 part of doc_code_merger;
 
 /**
- * Escapes HTML-special characters of [text] so that the result can be
- * included verbatim in HTML source code, either in an element body or in an
- * attribute value.
- */
-String htmlEscape(String text) {
-  // TODO(efortuna): A more efficient implementation.
-  return text.replaceAll("&", "&amp;")
-             .replaceAll("<", "&lt;")
-             .replaceAll(">", "&gt;")
-             .replaceAll('"', "&quot;")
-             .replaceAll("'", "&apos;");
-}
-
-/**
  * [DocCodeMerger] merges documentation with code.
  *
  * See the project README.md for more information.
@@ -470,6 +456,20 @@ class DocCodeMerger {
     }
     return completer.future;
   }
+}
+
+/**
+ * Escapes HTML-special characters of [text] so that the result can be
+ * included verbatim in HTML source code, either in an element body or in an
+ * attribute value.
+ */
+String htmlEscape(String text) {
+  // TODO(efortuna): A more efficient implementation.
+  return text.replaceAll("&", "&amp;")
+             .replaceAll("<", "&lt;")
+             .replaceAll(">", "&gt;")
+             .replaceAll('"', "&quot;")
+             .replaceAll("'", "&apos;");
 }
 
 /// This is stuff to make testing easier.
