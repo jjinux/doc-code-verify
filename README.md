@@ -73,9 +73,6 @@ To run the unittests:
 TODO
 ----
 
-It does not play well with symlinks in the code, especially symlink loops. See
-(http://code.google.com/p/dart/issues/detail?id=4801).
-
 Make it possible to configure the syntax.
 
 Make it possible to ignore certain filetypes. E.g. ignore files that aren't
@@ -91,5 +88,8 @@ stderr.writeString("Message").
 Known Limitations
 -----------------
 
-I silently ignore symlinks in the documentation. If you care why, grep for
+It silently ignores symlinks in the documentation. If you care why, grep for
 "symlink" in the source code.
+
+It does not play well with symlink loops. See
+(http://code.google.com/p/dart/issues/detail?id=4801).

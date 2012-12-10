@@ -7,6 +7,7 @@ import 'package:unittest/unittest.dart';
 import 'package:doc_code_merge/doc_code_merger.dart';
 
 Directory get scriptDir => new File(new Options().script).directorySync();
+Directory get projectDir => new Directory(new Path.fromNative(scriptDir.path).append("..").toNativePath());
 
 /**
  * Call a callback with a temporary directory.
@@ -34,6 +35,11 @@ void main() {
 
     test("scriptName should be doc_code_merge.dart", () {
       expect(merger.scriptName, equals("doc_code_merge.dart"));
+    });
+
+    test("projectDir should have a bin directory in it", () {
+      expect(new Directory(new Path.fromNative(projectDir.path).append("bin").toNativePath()).existsSync(),
+             isTrue);
     });
 
     test('the syntax for example names is pretty permissive', () {
@@ -114,19 +120,21 @@ void main() {
       var printedError = false;
 
       void _print(String s) {
-        expect(s, equals("doc_code_merge.dart: BEGIN for `wrong_name` not found; spelling error?"));
+        expect(s, equals("doc_code_merge.dart: BEGIN for `wrongName` not found; spelling error?"));
         printedError = true;
       }
 
+      // I have to break up BEGIN and END so that they are treated literally
+      // in this test, but nowhere else.
       merger.scanForExamples("""
-        // BEGIN(some_name)
+        // BEGI""" """N(someName)
         line
-        // END(wrong_name)
+        // EN""" """D(wrongName)
       """, print: _print);
       
       expect(merger.errorsEncountered, isTrue);
       expect(printedError, isTrue);
-      expect(Strings.concatAll(merger.examples["some_name"]),
+      expect(Strings.concatAll(merger.examples["someName"]),
              equalsIgnoringWhitespace("line"));
     });
 
@@ -139,6 +147,17 @@ void main() {
         expect(Strings.concatAll(merger.examples["thisTestIsSoMeta"]), equalsIgnoringWhitespace("""
           // meta meta meta
         """));
+      }));
+    });
+    
+    // The way pub uses symlinks really messes up doc-code-merge because Dart's
+    // DirectoryLister doesn't have a way to configure how to handle symlinks.
+    // Hence, doc-code-merge will end up seeing the same block of code multiple
+    // times. We should instead just ignore symlinks.
+    test('scanDirectoryForExamples should ignore symlinks', () {
+      merger.scanDirectoryForExamples(projectDir).then(expectAsync1((completed) {
+        expect(Strings.concatAll(merger.examples["symlinkExample"]),
+               equalsIgnoringWhitespace("// 1"));
       }));
     });
 

@@ -82,6 +82,9 @@ class DocCodeMerger {
 
   /**
    * Scan an entire directory for examples and update [examples].
+   * 
+   * Because of the way pub uses symlinks, it's common to see the same file
+   * multiple times. Ignore files we've already seen.
    *
    * I'm stuck using an async interface since there is no synchronous interface for Directory.list.
    * See: http://code.google.com/p/dart/issues/detail?id=4730
@@ -89,7 +92,10 @@ class DocCodeMerger {
   Future scanDirectoryForExamples(Directory sourceDirectory) {
     var completer = new Completer();
     DirectoryLister lister = sourceDirectory.list(recursive: true);
+    var pathsSeen = new Set<String>();
     lister.onFile = (String path) {
+      if (pathsSeen.contains(path)) return;
+      pathsSeen.add(path);
       Path pathPath = new Path.fromNative(path);  // :)
       if (isPrivate(pathPath)) return;
       Path filenameAsPath = new Path.fromNative(pathPath.filename);
@@ -98,6 +104,11 @@ class DocCodeMerger {
     };
     lister.onDone = (done) => completer.complete(true);
     return completer.future;
+
+    // This is used in a test. It only works if I put it in the lib directory.
+    // BEGIN(symlinkExample)
+    // 1
+    // END(symlinkExample)  
   }
 
   /**
