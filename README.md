@@ -11,9 +11,9 @@ Setup
 	export DART_SDK=.../dart/dart-sdk
 	export PATH=$PATH:$DART_SDK/bin
 	pub install
-
-	# HACK: Work around: http://code.google.com/p/dart/issues/detail?id=4801
-	rm packages/doc-code-merge
+	
+	# Put doc_code_merge.dart itself in your PATH.
+	export PATH=$PATH:`pwd`/bin
 
 Usage
 -----
@@ -68,14 +68,13 @@ Testing
 
 To run the unittests:
 
-	dart --enable-checked-mode test_doc_code_merge.dart
+	dart --enable-checked-mode test/doc_code_merger_test.dart
 
 TODO
 ----
 
-It gets hopelessly confused by symlink loops. See
-(http://code.google.com/p/dart/issues/detail?id=4801). See also the "HACK" in
-this file.
+It does not play well with symlinks in the code, especially symlink loops. See
+(http://code.google.com/p/dart/issues/detail?id=4801).
 
 Make it possible to configure the syntax.
 
