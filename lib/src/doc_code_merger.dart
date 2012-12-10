@@ -29,14 +29,14 @@ String htmlEscape(String text) {
  */
 class DocCodeMerger {
   static final newlineRegExp = new RegExp(r"\r\n|\r|\n");
-  static const nameInParens = r"\(([^)]+)\)";
   static final beginRegExp = new RegExp("BEGIN$nameInParens");
   static final endRegExp = new RegExp("END$nameInParens");
   static final mergeBlockRegExp = new RegExp("MERGE$nameInParens");
   static final inlineMergeRegExp = new RegExp("\\(MERGE$nameInParens\\)");
-  static final newline = "\n";
-  static final encoding = Encoding.UTF_8;
-  static final indentation = "\t";
+  static const nameInParens = r"\(([^)]+)\)";
+  static const newline = "\n";
+  static const encoding = Encoding.UTF_8;
+  static const indentation = "\t";
   String scriptName;
   
   /**
