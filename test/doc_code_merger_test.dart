@@ -142,12 +142,15 @@ void main() {
       // BEGIN(thisTestIsSoMeta)
       // meta meta meta
       // END(thisTestIsSoMeta)
-      merger.scanDirectoryForExamples(scriptDir).then(expectAsync1((completed) {
+      
+      var checkResult = expectAsync1((completed) {
         expect(merger.examples.length, greaterThan(1));
         expect(Strings.concatAll(merger.examples["thisTestIsSoMeta"]), equalsIgnoringWhitespace("""
           // meta meta meta
         """));
-      }));
+      });
+      
+      merger.scanDirectoryForExamples(scriptDir).then(checkResult);
     });
     
     // The way pub uses symlinks really messes up doc-code-merge because Dart's
@@ -271,9 +274,7 @@ void main() {
       // dangerous, but this test won't be running as root.
       merger.deleteFirst = true;
 
-      // expectAsync1 can't be called from within a "then" clause because
-      // that won't be called until after all the tests run.
-      var checkResults = expectAsync1((bool completed) {
+      var checkResult = expectAsync1((bool completed) {
         String scriptFilename = new Path.fromNative(new Options().script).filename;
         Path outputDirectory = new Path.fromNative(tempDir.path);
         Path mergedFile = outputDirectory.append(scriptFilename);
@@ -291,7 +292,7 @@ void main() {
       merger.scanDirectoryForExamples(scriptDir)
       .chain((result) => merger.copyAndMergeDirectory(scriptDir,
           scriptDir, tempDir, print: printNothing))
-      .then(checkResults);
+      .then(checkResult);
     });
 
     test("clearOutputDirectory checks that the output directory doesn't exist", () {
@@ -530,9 +531,7 @@ void main() {
     test("main does everything", () {
       Directory tempDir = new Directory("").createTempSync();
 
-      // expectAsync1 can't be called from within a "then" clause because
-      // that won't be called until after all the tests run.
-      var checkResults = expectAsync1((bool result) {
+      var checkResult = expectAsync1((bool result) {
 
         // TODO(jjinux): If there is an exception, or something else weird happens, then
         // the temp directory gets leaked. I can't figure out how to do it with
@@ -543,7 +542,7 @@ void main() {
       });
 
       merger.main(["--delete-first", scriptDir.path, scriptDir.path, tempDir.path],
-          print: printNothing).then(checkResults);
+          print: printNothing).then(checkResult);
     });
 
     test("ltrim trims the left side of a string", () {
