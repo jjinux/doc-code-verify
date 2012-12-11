@@ -5,6 +5,9 @@ doc-code-merge is a tool to merge source code into documentation. Keeping the
 source code separate of the documentation makes it easier to work with and
 easier to test. Merging the two can be part of your build process.
 
+See the project announcement:
+http://news.dartlang.org/2012/12/darts-approach-to-illiterate.html
+
 Setup
 -----
 
@@ -18,13 +21,13 @@ Setup
 Usage
 -----
 
-Start by writing some documentation. You can use either a single file or a
-whole file hierarchy. The documentation can have lines that look like this:
+Start by creating a directory and putting some documentation into it. The
+documentation can have lines that look like this:
 
 	MERGE(my_example_name)
 
-Then create a separate codebase. Again, it can be either a single file or a
-whole file hierarchy. Inside the code, you can have examples such as:
+Now, create another directory and put some code in it. You can have examples
+such as:
 
 	// BEGIN(my_example_name)
 	Lots of source code
@@ -35,13 +38,16 @@ merged into it, run:
 
 	doc_code_merge.dart DOCUMENTATION CODE OUTPUT
 
-DOCUMENTATION and CODE (whether they are files or directories) will not be
-changed. OUTPUT will end up with the same structure as DOCUMENTATION.
+The DOCUMENTATION and CODE directories will not be changed. The OUTPUT
+directory will end up with the same structure as the DOCUMENTATION directory.
 
 Details
 -------
 
 To get usage, run: doc_code_merge.dart --help
+
+It's okay to use the same directory for DOCUMENTATION and for CODE, but you
+must use a different directory for OUTPUT.
 
 In general, the syntax is line-oriented. I.e. each directive should be on its
 own line. However, putting other things on the line, such as comment markers,
@@ -60,8 +66,11 @@ I plan on making the actual syntax configurable. Naturally, the goal is to
 support any text-based documentation format (especially HTML) and any type of
 source code (especially Dart).
 
-Example blocks may overlap with one another. If two blocks share the same
-name, they'll be concatenated.
+Example blocks may overlap with one another.
+
+If two blocks share the same name, they'll be concatenated.
+
+If you leave out the END for a block, it'll include the rest of the file.
 
 Testing
 -------
