@@ -1,4 +1,4 @@
 name: doc_code_merge
 
 dependencies:
-  unittest: '>=0.2.7'
+  unittest: any

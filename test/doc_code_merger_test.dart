@@ -38,7 +38,7 @@ void main() {
     });
 
     test("projectDir should have a bin directory in it", () {
-      expect(new Directory(new Path.fromNative(projectDir.path).append("bin").toNativePath()).existsSync(),
+      expect(new Directory(new Path(projectDir.path).append("bin").toNativePath()).existsSync(),
              isTrue);
     });
 
@@ -275,8 +275,8 @@ void main() {
       merger.deleteFirst = true;
 
       var checkResult = expectAsync1((bool completed) {
-        String scriptFilename = new Path.fromNative(new Options().script).filename;
-        Path outputDirectory = new Path.fromNative(tempDir.path);
+        String scriptFilename = new Path(new Options().script).filename;
+        Path outputDirectory = new Path(tempDir.path);
         Path mergedFile = outputDirectory.append(scriptFilename);
         String mergedSource = new File.fromPath(mergedFile).readAsStringSync(DocCodeMerger.encoding);
         expect(mergedSource, stringContainsInOrder(["Start of merge",
@@ -290,7 +290,7 @@ void main() {
       });
 
       merger.scanDirectoryForExamples(scriptDir)
-      .chain((result) => merger.copyAndMergeDirectory(scriptDir,
+      .then((result) => merger.copyAndMergeDirectory(scriptDir,
           scriptDir, tempDir, print: printNothing))
       .then(checkResult);
     });
@@ -357,7 +357,7 @@ void main() {
 
     test("resolveDirectoryOrExit should return an absolute path", () {
       Directory resolvedDirectory = merger.resolveDirectoryOrExit('.');
-      expect(new Path.fromNative(resolvedDirectory.path).isAbsolute, isTrue);
+      expect(new Path(resolvedDirectory.path).isAbsolute, isTrue);
     });
 
     test("resolveDirectoryOrExit should check that a directory exists or exit with an error", () {
@@ -417,28 +417,28 @@ void main() {
 
     test("parseArguments should resolve directories", () {
       merger.parseArguments(['.', '.', 'irrelevant']);
-      expect(new Path.fromNative(merger.documentationDirectory.path).isAbsolute, isTrue);
-      expect(new Path.fromNative(merger.codeDirectory.path).isAbsolute, isTrue);
+      expect(new Path(merger.documentationDirectory.path).isAbsolute, isTrue);
+      expect(new Path(merger.codeDirectory.path).isAbsolute, isTrue);
     });
 
     test("isPrivate should be false for '.'", () {
-      expect(merger.isPrivate(new Path.fromNative('.')), isFalse);
+      expect(merger.isPrivate(new Path('.')), isFalse);
     });
 
     test("isPrivate should be true for '..'", () {
-      expect(merger.isPrivate(new Path.fromNative('..')), isTrue);
+      expect(merger.isPrivate(new Path('..')), isTrue);
     });
 
     test("isPrivate should be true for '.git'", () {
-      expect(merger.isPrivate(new Path.fromNative('.git')), isTrue);
+      expect(merger.isPrivate(new Path('.git')), isTrue);
     });
 
     test("isPrivate should be true for 'foo/.git/bar'", () {
-      expect(merger.isPrivate(new Path.fromNative('foo/.git/bar')), isTrue);
+      expect(merger.isPrivate(new Path('foo/.git/bar')), isTrue);
     });
 
     test("isPrivate should be false for './foo/bar'", () {
-      expect(merger.isPrivate(new Path.fromNative('./foo/bar')), isFalse);
+      expect(merger.isPrivate(new Path('./foo/bar')), isFalse);
     });
 
     test("htmlEscapeFilter escapes HTML", () {
