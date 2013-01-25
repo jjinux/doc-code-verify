@@ -96,9 +96,9 @@ class DocCodeMerger {
     lister.onFile = (String path) {
       if (pathsSeen.contains(path)) return;
       pathsSeen.add(path);
-      Path pathPath = new Path.fromNative(path);  // :)
+      Path pathPath = new Path(path);  // :)
       if (isPrivate(pathPath)) return;
-      Path filenameAsPath = new Path.fromNative(pathPath.filename);
+      Path filenameAsPath = new Path(pathPath.filename);
       var sourceCode = new File(path).readAsStringSync(encoding);
       scanForExamples(sourceCode);
     };
@@ -221,13 +221,13 @@ class DocCodeMerger {
     output.createSync();
     var completer = new Completer();
     DirectoryLister lister = documentation.list(recursive: true);
-    Path documentationPath = new Path.fromNative(documentation.path);
-    Path outputPath = new Path.fromNative(output.path);
+    Path documentationPath = new Path(documentation.path);
+    Path outputPath = new Path(output.path);
     var writers = new List<Future>();
 
     // Return the target path. If that's not possible, return null.
     Path getOutputPath(String name) {
-      Path path = new Path.fromNative(name);
+      Path path = new Path(name);
       Path relativePath;
 
       // DirectoryLister insists on getting the realpath for symlinks, which
@@ -265,7 +265,7 @@ class DocCodeMerger {
     };
 
     lister.onDone = (done) {
-      Futures.wait(writers).then((futures) {
+      Future.wait(writers).then((futures) {
         completer.complete(true);
       });
     };
@@ -353,16 +353,16 @@ class DocCodeMerger {
    * We want to ignore files like .DS_Store and directories like .git.
    */
   bool isPrivate(Path path) {
-    return path.segments().some((segment) {
+    return path.segments().any((segment) {
       if (segment == '.') return false;
       if (segment.startsWith('.')) return true; // Including '..'
       return false;
     });
   }
 
-  static List<String> htmlEscapeFilter(List<String> lines) => lines.map(htmlEscape);
+  static List<String> htmlEscapeFilter(List<String> lines) => lines.mappedBy(htmlEscape);
 
-  static List<String> indentFilter(List<String> lines) => lines.map((s) => "$indentation$s");
+  static List<String> indentFilter(List<String> lines) => lines.mappedBy((s) => "$indentation$s");
 
   /**
    * Remove the indentation from the given lines.
@@ -465,7 +465,7 @@ class DocCodeMerger {
       completer.complete(false);
     } else {
       scanDirectoryForExamples(codeDirectory)
-      .chain((result) => copyAndMergeDirectory(documentationDirectory,
+      .then((result) => copyAndMergeDirectory(documentationDirectory,
           codeDirectory, outputDirectory, print: print))
       .then((result) => completer.complete(true));
     }

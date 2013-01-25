@@ -7,7 +7,7 @@ import 'package:unittest/unittest.dart';
 import 'package:doc_code_merge/doc_code_merger.dart';
 
 Directory get scriptDir => new File(new Options().script).directorySync();
-Directory get projectDir => new Directory(new Path.fromNative(scriptDir.path).append("..").toNativePath());
+Directory get projectDir => new Directory(new Path(scriptDir.path).append("..").toNativePath());
 
 /**
  * Call a callback with a temporary directory.
