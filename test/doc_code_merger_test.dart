@@ -7,7 +7,7 @@ import 'package:unittest/unittest.dart';
 import 'package:doc_code_merge/doc_code_merger.dart';
 
 Directory get scriptDir => new File(new Options().script).directorySync();
-Directory get projectDir => new Directory(new Path(scriptDir.path).append("..").toNativePath());
+Directory get projectDir => new Directory(new Path(scriptDir.path).append("..").canonicalize().toNativePath());
 
 /**
  * Call a callback with a temporary directory.
@@ -69,7 +69,7 @@ void main() {
         }
       """);
 
-      expect(Strings.concatAll(merger.examples["add"]), equalsIgnoringWhitespace("""
+      expect(merger.examples["add"].join(), equalsIgnoringWhitespace("""
         num add(num a, num b) {
           return a + b;
         }
@@ -88,11 +88,11 @@ void main() {
         line
       """);
 
-      expect(Strings.concatAll(merger.examples["one_line"]), equalsIgnoringWhitespace("""
+      expect(merger.examples["one_line"].join(), equalsIgnoringWhitespace("""
         line
       """));
 
-      expect(Strings.concatAll(merger.examples["two_lines"]), equalsIgnoringWhitespace("""
+      expect(merger.examples["two_lines"].join(), equalsIgnoringWhitespace("""
         line
         line
       """));
@@ -110,7 +110,7 @@ void main() {
         // END(example)
       """);
 
-      expect(Strings.concatAll(merger.examples["example"]), equalsIgnoringWhitespace("""
+      expect(merger.examples["example"].join(), equalsIgnoringWhitespace("""
         line
         line
       """));
@@ -134,7 +134,7 @@ void main() {
       
       expect(merger.errorsEncountered, isTrue);
       expect(printedError, isTrue);
-      expect(Strings.concatAll(merger.examples["someName"]),
+      expect(merger.examples["someName"].join(),
              equalsIgnoringWhitespace("line"));
     });
 
@@ -142,26 +142,20 @@ void main() {
       // BEGIN(thisTestIsSoMeta)
       // meta meta meta
       // END(thisTestIsSoMeta)
-      
-      var checkResult = expectAsync1((completed) {
-        expect(merger.examples.length, greaterThan(1));
-        expect(Strings.concatAll(merger.examples["thisTestIsSoMeta"]), equalsIgnoringWhitespace("""
-          // meta meta meta
-        """));
-      });
-      
-      merger.scanDirectoryForExamples(scriptDir).then(checkResult);
+            
+      merger.scanDirectoryForExamples(scriptDir);
+      expect(merger.examples.length, greaterThan(1));
+      expect(merger.examples["thisTestIsSoMeta"].join(), equalsIgnoringWhitespace("""
+        // meta meta meta
+      """));
     });
     
-    // The way pub uses symlinks really messes up doc-code-merge because Dart's
-    // DirectoryLister doesn't have a way to configure how to handle symlinks.
-    // Hence, doc-code-merge will end up seeing the same block of code multiple
-    // times. We should instead just ignore symlinks.
-    test('scanDirectoryForExamples should ignore symlinks', () {
-      merger.scanDirectoryForExamples(projectDir).then(expectAsync1((completed) {
-        expect(Strings.concatAll(merger.examples["symlinkExample"]),
-               equalsIgnoringWhitespace("// 1"));
-      }));
+    // Because of the way pub uses symlinks, it's common to see the same file
+    // multiple times. Ignore files we've already seen.
+    test('scanDirectoryForExamples should ignore files it has already seen because of symlinks', () {
+      merger.scanDirectoryForExamples(projectDir);
+      expect(merger.examples["symlinkExample"].join(),
+             equalsIgnoringWhitespace("// 1"));
     });
 
     test('mergeExamples merges in examples', () {
@@ -268,31 +262,53 @@ void main() {
       // MERGE(copyAndMergeDirectory)
       // End of merge
 
-      Directory tempDir = new Directory("").createTempSync();
-
-      // Deleting and recreating a temporary directory is just slightly
-      // dangerous, but this test won't be running as root.
-      merger.deleteFirst = true;
-
-      var checkResult = expectAsync1((bool completed) {
+      callWithTemporaryDirectorySync((Directory tempDir) {
+        // Deleting and recreating a temporary directory is just slightly
+        // dangerous, but this test won't be running as root.
+        merger.deleteFirst = true;
+  
+        merger.documentationDirectory = scriptDir;
+        merger.codeDirectory = scriptDir;
+        merger.scanDirectoryForExamples(scriptDir);
+        merger.copyAndMergeDirectory(scriptDir,
+            scriptDir, tempDir, print: printNothing);
+  
         String scriptFilename = new Path(new Options().script).filename;
         Path outputDirectory = new Path(tempDir.path);
         Path mergedFile = outputDirectory.append(scriptFilename);
         String mergedSource = new File.fromPath(mergedFile).readAsStringSync(DocCodeMerger.encoding);
         expect(mergedSource, stringContainsInOrder(["Start of merge",
                                                     "This is the copyAndMergeDirectory example.",
-                                                    "End of merge"]));
-
-        // TODO(jjinux): If there is an exception, or something else weird happens, then
-        // the temp directory gets leaked. I can't figure out how to do it with
-        // this strange mix of async and sync code.
-        tempDir.deleteSync(recursive: true);
+                                                    "End of merge"]));        
       });
+    });
 
-      merger.scanDirectoryForExamples(scriptDir)
-      .then((result) => merger.copyAndMergeDirectory(scriptDir,
-          scriptDir, tempDir, print: printNothing))
-      .then(checkResult);
+    test("prepareOutputDirectory should make sure the output directory is not within the documentation or code directories", () {
+      callWithTemporaryDirectorySync((tempDir) {
+        var printedError = false;
+        var exited = false;
+
+        void _print(String s) {
+          expect(s, equals("doc_code_merge.dart: The OUTPUT directory must not be within the DOCUMENTATION or CODE directories"));
+          printedError = true;
+        }
+        
+        void _exit(int status) {
+          expect(status, 1);
+          exited = true;
+          throw new Exit();
+        }
+        
+        merger.documentationDirectory = tempDir;
+        merger.codeDirectory = tempDir;
+        var outputDirectory = new Directory(new Path(tempDir.path).append("out").canonicalize().toNativePath());
+
+        expect(() => merger.prepareOutputDirectory(outputDirectory, print: _print, exit: _exit),
+            throwsA(new isInstanceOf<Exit>()));
+        expect(merger.errorsEncountered, isTrue);
+        expect(printedError, isTrue);
+        expect(exited, isTrue);
+      });
     });
 
     test("clearOutputDirectory checks that the output directory doesn't exist", () {
@@ -529,20 +545,11 @@ void main() {
     // This test is pretty high level. copyAndMergeDirectory has a test that
     // is more thorough.
     test("main does everything", () {
-      Directory tempDir = new Directory("").createTempSync();
-
-      var checkResult = expectAsync1((bool result) {
-
-        // TODO(jjinux): If there is an exception, or something else weird happens, then
-        // the temp directory gets leaked. I can't figure out how to do it with
-        // this strange mix of async and sync code.
-        tempDir.deleteSync(recursive: true);
-
-        expect(result, isTrue);
+      callWithTemporaryDirectorySync((Directory tempDir) {
+        merger.main(["--delete-first", scriptDir.path, scriptDir.path, tempDir.path],
+            print: printNothing);
+        expect(merger.errorsEncountered, isFalse);
       });
-
-      merger.main(["--delete-first", scriptDir.path, scriptDir.path, tempDir.path],
-          print: printNothing).then(checkResult);
     });
 
     test("ltrim trims the left side of a string", () {

@@ -12,7 +12,6 @@ import 'package:doc_code_merge/doc_code_merger.dart';
 /// Basically, create a DocCodeMerger object and call its main method.
 void main() {
   var merger = new DocCodeMerger();
-  merger.main(new Options().arguments).then((result) {
-    exit(merger.errorsEncountered ? 1 : 0);
-  });
+  merger.main(new Options().arguments);
+  exit(merger.errorsEncountered ? 1 : 0);
 }

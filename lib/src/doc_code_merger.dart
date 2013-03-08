@@ -85,30 +85,24 @@ class DocCodeMerger {
    * 
    * Because of the way pub uses symlinks, it's common to see the same file
    * multiple times. Ignore files we've already seen.
-   *
-   * I'm stuck using an async interface since there is no synchronous interface for Directory.list.
-   * See: http://code.google.com/p/dart/issues/detail?id=4730
    */
-  Future scanDirectoryForExamples(Directory sourceDirectory) {
-    var completer = new Completer();
-    DirectoryLister lister = sourceDirectory.list(recursive: true);
+  void scanDirectoryForExamples(Directory sourceDirectory) {
     var pathsSeen = new Set<String>();
-    lister.onFile = (String path) {
-      if (pathsSeen.contains(path)) return;
+    for (FileSystemEntity fse in sourceDirectory.listSync(recursive: true)) {
+      if (!(fse is File)) continue;
+      String path = fse.fullPathSync();
+      if (pathsSeen.contains(path)) continue;
       pathsSeen.add(path);
       Path pathPath = new Path(path);  // :)
-      if (isPrivate(pathPath)) return;
-      Path filenameAsPath = new Path(pathPath.filename);
+      if (isPrivate(pathPath)) continue;
       var sourceCode = new File(path).readAsStringSync(encoding);
       scanForExamples(sourceCode);
-    };
-    lister.onDone = (done) => completer.complete(true);
-    return completer.future;
+    }
 
     // This is used in a test. It only works if I put it in the lib directory.
     // BEGIN(symlinkExample)
     // 1
-    // END(symlinkExample)  
+    // END(symlinkExample)
   }
 
   /**
@@ -149,12 +143,12 @@ class DocCodeMerger {
             lines[lines.length - 1] = rtrim(lines[lines.length - 1]);
 
             // Don't use a newline on the last line.
-            String joined = Strings.join(lines, newline);
+            String joined = lines.join(newline);
             linePieces.add(joined);
           }
         }
 
-        String fullLine = Strings.concatAll(linePieces);
+        String fullLine = linePieces.join();
         output.add("$fullLine$newline");
         return;
       }
@@ -175,7 +169,7 @@ class DocCodeMerger {
       output.add("$line$newline");
     });
 
-    return Strings.concatAll(output);
+    return output.join();
   }
 
   /**
@@ -209,69 +203,71 @@ class DocCodeMerger {
     return applyFilters(filters, lines);
   }
 
-  /**
-   * Merge the documentation directory and the code directory and create the output directory.
-   *
-   * I'm stuck using an async interface since there is no synchronous interface for Directory.list.
-   * See: http://code.google.com/p/dart/issues/detail?id=4730
-   */
-  Future copyAndMergeDirectory(Directory documentation, Directory code,
-                               Directory output, {PrintFunction print: print}) {
-    clearOutputDirectory(output);
-    output.createSync();
-    var completer = new Completer();
-    DirectoryLister lister = documentation.list(recursive: true);
+  /// Merge the documentation directory and the code directory and create the output directory.
+  void copyAndMergeDirectory(Directory documentation, Directory code,
+                             Directory output, {PrintFunction print: print}) {
+    prepareOutputDirectory(output);
     Path documentationPath = new Path(documentation.path);
     Path outputPath = new Path(output.path);
-    var writers = new List<Future>();
 
     // Return the target path. If that's not possible, return null.
     Path getOutputPath(String name) {
       Path path = new Path(name);
       Path relativePath;
-
-      // DirectoryLister insists on getting the realpath for symlinks, which
-      // causes path.relativeTo to fail and raise a NotImplementedException
-      // exception. I could complain, but since every Dart application that
-      // uses Dart is going to have symlinks in the packages directory,
-      // I'm just going to ignore them silently.
-      if (!path.toNativePath().startsWith(documentationPath.toNativePath())) return null;
       relativePath = path.relativeTo(documentationPath);
-
       if (isPrivate(relativePath)) return null;
       return outputPath.join(relativePath);
     }
-
-    lister.onDir = (String docDir) {
-      Path outputPath = getOutputPath(docDir);
-      if (outputPath == null) return;
-      Directory outputDir = new Directory.fromPath(outputPath);
-      outputDir.createSync();
-    };
-
-    lister.onFile = (String docFile) {
-      Path outputPath = getOutputPath(docFile);
-      if (outputPath == null) return;
-      var completer = new Completer();
-      writers.add(completer.future);
-      String docText = new File(docFile).readAsStringSync(encoding);
-      File outputFile = new File.fromPath(outputPath);
-      OutputStream outputStream = outputFile.openOutputStream(FileMode.WRITE);
-      List<Filter> filters = getFilters(docFile);
-      String outputText = mergeExamples(docText, filters: filters, print: print);
-      outputStream.writeString(outputText, encoding);
-      outputStream.onClosed = () => completer.complete(true);
-      outputStream.close();
-    };
-
-    lister.onDone = (done) {
-      Future.wait(writers).then((futures) {
-        completer.complete(true);
-      });
-    };
-    return completer.future;
+    
+    for (FileSystemEntity fse in documentation.listSync(recursive: true)) {
+      if (fse is Directory) {
+        String docDir = fse.path;
+        Path outputPath = getOutputPath(docDir);
+        if (outputPath == null) continue;
+        Directory outputDir = new Directory.fromPath(outputPath);
+        outputDir.createSync();
+      } else if (fse is File) {
+        String docFile = fse.path;
+        Path outputPath = getOutputPath(docFile);
+        if (outputPath == null) continue;
+        String docText = new File(docFile).readAsStringSync(encoding);
+        File outputFile = new File.fromPath(outputPath);
+        RandomAccessFile randomAccessFile = outputFile.openSync(FileMode.WRITE);
+        List<Filter> filters = getFilters(docFile);
+        String outputText = mergeExamples(docText, filters: filters, print: print);
+        randomAccessFile.writeStringSync(outputText, encoding);
+        randomAccessFile.closeSync();
+      }
+    }
   }
 
+  /**
+   * Prepare the output directory.
+   * 
+   * If it lies within the documentation or the code directory, complain
+   * and exit.
+   */
+  void prepareOutputDirectory(Directory outputDirectory, {PrintFunction print: print, ExitFunction exit: exit}) {
+    bool isWithin(Path inner, Path outer) {
+      String outerJoin = outer.segments().join("/");
+      String innerJoin = inner.segments().join("/");
+      return "/$innerJoin/".startsWith("/$outerJoin");
+    }
+    
+    Path getDirectoryPath(Directory dir) => new Path(new File(dir.path).fullPathSync());
+    
+    clearOutputDirectory(outputDirectory);
+    outputDirectory.createSync();
+    Path outputDirectoryPath = getDirectoryPath(outputDirectory);
+    if (isWithin(outputDirectoryPath, getDirectoryPath(documentationDirectory)) ||
+        isWithin(outputDirectoryPath, getDirectoryPath(codeDirectory))) {
+      errorsEncountered = true;
+      print("$scriptName: The OUTPUT directory must not be within the DOCUMENTATION or CODE directories");
+      exit(1);
+      throw "exit should not return";
+    }
+  }
+  
   /**
    * Check that the output directory doesn't exist.
    *
@@ -287,7 +283,7 @@ class DocCodeMerger {
         print("$scriptName: Could not prepare output directory `${outputDirectory.path}`: Directory already exists\n"
               "You should either delete it or pass the --delete-first flag");
         exit(1);
-        throw new ExpectException("exit should not return");
+        throw "exit should not return";
       }
     }
   }
@@ -301,7 +297,7 @@ class DocCodeMerger {
       if (arg == "-h" || arg == "--help") {
         print(getUsage());
         exit(0);
-        throw new ExpectException("exit should not return");
+        throw "exit should not return";
       }
       if (arg == "--delete-first") {
         deleteFirst = true;
@@ -316,8 +312,7 @@ class DocCodeMerger {
       codeDirectory = resolveDirectoryOrExit(positionalArguments[1]);
 
       // We can't resolve the outputDirectory yet since it probably doesn't
-      // exist. It turns out not to matter since we don't need to use
-      // path.relativeTo with the outputDirectory.
+      // exist.
       outputDirectory = new Directory(positionalArguments[2]);
     } else {
       errorsEncountered = true;
@@ -338,7 +333,7 @@ class DocCodeMerger {
     } on FileIOException catch(e) {
       print("$scriptName: $e");
       exit(1);
-      throw new ExpectException("exit should not return");
+      throw "exit should not return";
     }
   }
 
@@ -360,9 +355,13 @@ class DocCodeMerger {
     });
   }
 
-  static List<String> htmlEscapeFilter(List<String> lines) => lines.mappedBy(htmlEscape);
+  static List<String> htmlEscapeFilter(List<String> lines) {
+    return new List.from(lines.map(htmlEscape));
+  }
 
-  static List<String> indentFilter(List<String> lines) => lines.mappedBy((s) => "$indentation$s");
+  static List<String> indentFilter(List<String> lines) {
+    return new List.from(lines.map((s) => "$indentation$s"));
+  }
 
   /**
    * Remove the indentation from the given lines.
@@ -379,7 +378,7 @@ class DocCodeMerger {
 
       // Figure out how much indentation the first line has.
       var indentation = new List<String>();
-      for (String char in lines[0].splitChars()) {
+      for (String char in lines[0].split("")) {
         if (char == " " || char == "\t") {
           indentation.add(char);
         } else {
@@ -390,7 +389,7 @@ class DocCodeMerger {
       // Figure out the least amount of indentation any of the other lines has.
       for (var i = 1; i < lines.length; i++) {
         String line = lines[i];
-        List<String> chars = line.splitChars();
+        List<String> chars = line.split("");
 
         // Lines that only have whitespace should be set to "" and ignored.
         var whitespaceOnly = true;
@@ -428,9 +427,9 @@ class DocCodeMerger {
         if (line != "") {
 
           // Otherwise, trim off the right amount of indentation.
-          List<String> chars = line.splitChars();
+          List<String> chars = line.split("");
           List<String> unindented = chars.getRange(indentation.length, chars.length - indentation.length);
-          lines[i] = Strings.concatAll(unindented);
+          lines[i] = unindented.join();
         }
       }
     }
@@ -457,19 +456,13 @@ class DocCodeMerger {
   }
 
   /// This is a testable version of the main function.
-  Future<bool> main(List<String> arguments, {PrintFunction print: print,
+  void main(List<String> arguments, {PrintFunction print: print,
       ExitFunction exit: exit}) {
     parseArguments(arguments, print: print, exit: exit);
-    var completer = new Completer();
-    if (errorsEncountered) {
-      completer.complete(false);
-    } else {
-      scanDirectoryForExamples(codeDirectory)
-      .then((result) => copyAndMergeDirectory(documentationDirectory,
-          codeDirectory, outputDirectory, print: print))
-      .then((result) => completer.complete(true));
-    }
-    return completer.future;
+    if (errorsEncountered) return;
+    scanDirectoryForExamples(codeDirectory);
+    copyAndMergeDirectory(documentationDirectory,
+        codeDirectory, outputDirectory, print: print);
   }
 }
 
@@ -479,7 +472,6 @@ class DocCodeMerger {
  * attribute value.
  */
 String htmlEscape(String text) {
-  // TODO(efortuna): A more efficient implementation.
   return text.replaceAll("&", "&amp;")
              .replaceAll("<", "&lt;")
              .replaceAll(">", "&gt;")

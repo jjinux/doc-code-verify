@@ -89,16 +89,11 @@ source code.
 
 Make sure it works on simple files as well as directories.
 
-There are some TODO's in the code.
-
 Make sure things get printed to stderr using:
 stderr.writeString("Message").
 
 Known Limitations
 -----------------
 
-It silently ignores symlinks in the documentation. If you care why, grep for
-"symlink" in the source code.
-
 It does not play well with symlink loops. See
-(http://code.google.com/p/dart/issues/detail?id=4801).
+(http://code.google.com/p/dart/issues/detail?id=4794).
