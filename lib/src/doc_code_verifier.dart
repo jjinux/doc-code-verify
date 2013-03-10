@@ -203,44 +203,6 @@ class DocCodeVerifier {
     return applyFilters(filters, lines);
   }
 
-  /// Verify the documentation directory and the code directory and create the output directory.
-  void copyAndVerifyDirectory(Directory documentation, Directory code,
-                             Directory output, {PrintFunction print: print}) {
-    prepareOutputDirectory(output);
-    Path documentationPath = new Path(documentation.path);
-    Path outputPath = new Path(output.path);
-
-    // Return the target path. If that's not possible, return null.
-    Path getOutputPath(String name) {
-      Path path = new Path(name);
-      Path relativePath;
-      relativePath = path.relativeTo(documentationPath);
-      if (isPrivate(relativePath)) return null;
-      return outputPath.join(relativePath);
-    }
-    
-    for (FileSystemEntity fse in documentation.listSync(recursive: true)) {
-      if (fse is Directory) {
-        String docDir = fse.path;
-        Path outputPath = getOutputPath(docDir);
-        if (outputPath == null) continue;
-        Directory outputDir = new Directory.fromPath(outputPath);
-        outputDir.createSync();
-      } else if (fse is File) {
-        String docFile = fse.path;
-        Path outputPath = getOutputPath(docFile);
-        if (outputPath == null) continue;
-        String docText = new File(docFile).readAsStringSync(encoding);
-        File outputFile = new File.fromPath(outputPath);
-        RandomAccessFile randomAccessFile = outputFile.openSync(FileMode.WRITE);
-        List<Filter> filters = getFilters(docFile);
-        String outputText = verifyExamples(docText, filters: filters, print: print);
-        randomAccessFile.writeStringSync(outputText, encoding);
-        randomAccessFile.closeSync();
-      }
-    }
-  }
-
   /**
    * Prepare the output directory.
    * 
@@ -461,8 +423,6 @@ class DocCodeVerifier {
     parseArguments(arguments, print: print, exit: exit);
     if (errorsEncountered) return;
     scanDirectoryForExamples(codeDirectory);
-    copyAndVerifyDirectory(documentationDirectory,
-        codeDirectory, outputDirectory, print: print);
   }
 }
 
