@@ -1,4 +1,4 @@
-name: doc_code_merge
+name: doc_code_verify
 
 dependencies:
   unittest: any

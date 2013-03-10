@@ -1,7 +1,7 @@
-doc-code-merge
+doc-code-verify
 ==============
 
-doc-code-merge is a tool to merge source code into documentation. Keeping the
+doc-code-verify is a tool to verify source code into documentation. Keeping the
 source code separate of the documentation makes it easier to work with and
 easier to test. Merging the two can be part of your build process.
 
@@ -15,7 +15,7 @@ Setup
 	export PATH=$PATH:$DART_SDK/bin
 	pub install
 	
-	# Put doc_code_merge.dart itself in your PATH.
+	# Put doc_code_verify.dart itself in your PATH.
 	export PATH=$PATH:`pwd`/bin
 
 Usage
@@ -24,7 +24,7 @@ Usage
 Start by creating a directory and putting some documentation into it. The
 documentation can have lines that look like this:
 
-	MERGE(my_example_name)
+	VERIFY(my_example_name)
 
 Now, create another directory and put some code in it. You can have examples
 such as:
@@ -34,9 +34,9 @@ such as:
 	// END(my_example_name)
 
 To create a copy of the documentation with examples from the source code
-merged into it, run:
+verifyd into it, run:
 
-	doc_code_merge.dart DOCUMENTATION CODE OUTPUT
+	doc_code_verify.dart DOCUMENTATION CODE OUTPUT
 
 The DOCUMENTATION and CODE directories will not be changed. The OUTPUT
 directory will end up with the same structure as the DOCUMENTATION directory.
@@ -44,7 +44,7 @@ directory will end up with the same structure as the DOCUMENTATION directory.
 Details
 -------
 
-To get usage, run: doc_code_merge.dart --help
+To get usage, run: doc_code_verify.dart --help
 
 It's okay to use the same directory for DOCUMENTATION and for CODE, but you
 must use a different directory for OUTPUT.
@@ -53,11 +53,11 @@ In general, the syntax is line-oriented. I.e. each directive should be on its
 own line. However, putting other things on the line, such as comment markers,
 is generally okay.
 
-If you want to merge an example in the middle of a line and automatically trim
+If you want to verify an example in the middle of a line and automatically trim
 whitespace around the example, use this syntax (notice the parenthesis around
-the MERGE):
+the VERIFY):
 
-	This line shows how to merge a (MERGE(small_example)) inline.
+	This line shows how to verify a (VERIFY(small_example)) inline.
 
 Example names can contain anything, except a closing parenthesis. They can
 even contain whitespace, but whitespace is significant!
@@ -77,7 +77,7 @@ Testing
 
 To run the unittests:
 
-	dart --enable-checked-mode test/doc_code_merger_test.dart
+	dart --enable-checked-mode test/doc_code_verifier_test.dart
 
 TODO
 ----
