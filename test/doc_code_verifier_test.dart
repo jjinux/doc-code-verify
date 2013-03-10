@@ -253,36 +253,6 @@ void main() {
       // END(hello_world)
     });
 
-    test('copyAndVerifyDirectory should copy the source code and verify in the examples', () {
-      // BEGIN(copyAndVerifyDirectory)
-      // This is the copyAndVerifyDirectory example.
-      // END(copyAndVerifyDirectory)
-      //
-      // Start of verify
-      // VERIFY(copyAndVerifyDirectory)
-      // End of verify
-
-      callWithTemporaryDirectorySync((Directory tempDir) {
-        // Deleting and recreating a temporary directory is just slightly
-        // dangerous, but this test won't be running as root.
-        verifier.deleteFirst = true;
-  
-        verifier.documentationDirectory = scriptDir;
-        verifier.codeDirectory = scriptDir;
-        verifier.scanDirectoryForExamples(scriptDir);
-        verifier.copyAndVerifyDirectory(scriptDir,
-            scriptDir, tempDir, print: printNothing);
-  
-        String scriptFilename = new Path(new Options().script).filename;
-        Path outputDirectory = new Path(tempDir.path);
-        Path verifydFile = outputDirectory.append(scriptFilename);
-        String verifydSource = new File.fromPath(verifydFile).readAsStringSync(DocCodeVerifier.encoding);
-        expect(verifydSource, stringContainsInOrder(["Start of verify",
-                                                    "This is the copyAndVerifyDirectory example.",
-                                                    "End of verify"]));        
-      });
-    });
-
     test("prepareOutputDirectory should make sure the output directory is not within the documentation or code directories", () {
       callWithTemporaryDirectorySync((tempDir) {
         var printedError = false;
@@ -542,8 +512,7 @@ void main() {
                                "\t>>> There!"]));
     });
 
-    // This test is pretty high level. copyAndVerifyDirectory has a test that
-    // is more thorough.
+    // This test is pretty high level.
     test("main does everything", () {
       callWithTemporaryDirectorySync((Directory tempDir) {
         verifier.main(["--delete-first", scriptDir.path, scriptDir.path, tempDir.path],
