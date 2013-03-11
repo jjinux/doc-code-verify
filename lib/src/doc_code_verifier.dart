@@ -38,7 +38,6 @@ class DocCodeVerifier {
 
   Directory documentationDirectory;
   Directory codeDirectory;
-  Directory outputDirectory;
   bool errorsEncountered = false;
   bool deleteFirst = false;
 
@@ -203,53 +202,6 @@ class DocCodeVerifier {
     return applyFilters(filters, lines);
   }
 
-  /**
-   * Prepare the output directory.
-   * 
-   * If it lies within the documentation or the code directory, complain
-   * and exit.
-   */
-  void prepareOutputDirectory(Directory outputDirectory, {PrintFunction print: print, ExitFunction exit: exit}) {
-    bool isWithin(Path inner, Path outer) {
-      String outerJoin = outer.segments().join("/");
-      String innerJoin = inner.segments().join("/");
-      return "/$innerJoin/".startsWith("/$outerJoin");
-    }
-    
-    Path getDirectoryPath(Directory dir) => new Path(new File(dir.path).fullPathSync());
-    
-    clearOutputDirectory(outputDirectory);
-    outputDirectory.createSync();
-    Path outputDirectoryPath = getDirectoryPath(outputDirectory);
-    if (isWithin(outputDirectoryPath, getDirectoryPath(documentationDirectory)) ||
-        isWithin(outputDirectoryPath, getDirectoryPath(codeDirectory))) {
-      errorsEncountered = true;
-      print("$scriptName: The OUTPUT directory must not be within the DOCUMENTATION or CODE directories");
-      exit(1);
-      throw "exit should not return";
-    }
-  }
-  
-  /**
-   * Check that the output directory doesn't exist.
-   *
-   * If deleteFirst is true, try to delete the directory if it exists.
-   * If deleteFirst is false, and the directory exists, complain and exit.
-   */
-  void clearOutputDirectory(Directory outputDirectory, {PrintFunction print: print, ExitFunction exit: exit}) {
-    if (outputDirectory.existsSync()) {
-      if (deleteFirst) {
-        outputDirectory.deleteSync(recursive: true);
-      } else {
-        errorsEncountered = true;
-        print("$scriptName: Could not prepare output directory `${outputDirectory.path}`: Directory already exists\n"
-              "You should either delete it or pass the --delete-first flag");
-        exit(1);
-        throw "exit should not return";
-      }
-    }
-  }
-
   /// Parse command-line arguments.
   void parseArguments(List<String> arguments, {PrintFunction print: print,
       ExitFunction exit: exit}) {
@@ -273,9 +225,6 @@ class DocCodeVerifier {
       documentationDirectory = resolveDirectoryOrExit(positionalArguments[0]);
       codeDirectory = resolveDirectoryOrExit(positionalArguments[1]);
 
-      // We can't resolve the outputDirectory yet since it probably doesn't
-      // exist.
-      outputDirectory = new Directory(positionalArguments[2]);
     } else {
       errorsEncountered = true;
       print("$scriptName: Expected 3 positional arguments\n${getUsage()}");

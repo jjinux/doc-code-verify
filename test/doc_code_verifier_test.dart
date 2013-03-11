@@ -253,77 +253,12 @@ void main() {
       // END(hello_world)
     });
 
-    test("prepareOutputDirectory should make sure the output directory is not within the documentation or code directories", () {
-      callWithTemporaryDirectorySync((tempDir) {
-        var printedError = false;
-        var exited = false;
-
-        void _print(String s) {
-          expect(s, equals("doc_code_verify.dart: The OUTPUT directory must not be within the DOCUMENTATION or CODE directories"));
-          printedError = true;
-        }
-        
-        void _exit(int status) {
-          expect(status, 1);
-          exited = true;
-          throw new Exit();
-        }
-        
-        verifier.documentationDirectory = tempDir;
-        verifier.codeDirectory = tempDir;
-        var outputDirectory = new Directory(new Path(tempDir.path).append("out").canonicalize().toNativePath());
-
-        expect(() => verifier.prepareOutputDirectory(outputDirectory, print: _print, exit: _exit),
-            throwsA(new isInstanceOf<Exit>()));
-        expect(verifier.errorsEncountered, isTrue);
-        expect(printedError, isTrue);
-        expect(exited, isTrue);
-      });
-    });
-
-    test("clearOutputDirectory checks that the output directory doesn't exist", () {
-      verifier.clearOutputDirectory(new Directory("this_should_not_exist"));
-      expect(verifier.errorsEncountered, isFalse);
-    });
-
-    test("clearOutputDirectory complains and exits with error if the directory does exist", () {
-      var printedError = false;
-      var exited = false;
-
-      void _print(String s) {
-        expect(s, equals("doc_code_verify.dart: Could not prepare output directory `${new Directory.current().path}`: Directory already exists\n"
-                         "You should either delete it or pass the --delete-first flag"));
-        printedError = true;
-      }
-
-      void _exit(int status) {
-        expect(status, 1);
-        exited = true;
-        throw new Exit();
-      }
-
-      expect(() => verifier.clearOutputDirectory(new Directory.current(), print: _print, exit: _exit),
-          throwsA(new isInstanceOf<Exit>()));
-      expect(verifier.errorsEncountered, isTrue);
-      expect(printedError, isTrue);
-      expect(exited, isTrue);
-    });
-
-    test("clearOutputDirectory should delete the directory if deleteFirst is true", () {
-      callWithTemporaryDirectorySync((tempDir) {
-        verifier.deleteFirst = true;
-        verifier.clearOutputDirectory(tempDir);
-        expect(verifier.errorsEncountered, isFalse);
-      });
-    });
-
     test("parseArguments accepts exactly 3 positional arguments", () {
       String thisDir = scriptDir.path;
       verifier.parseArguments([thisDir, thisDir, "OUTPUT"]);
       expect(verifier.errorsEncountered, isFalse);
       expect(verifier.documentationDirectory.path, equals(thisDir));
       expect(verifier.codeDirectory.path, equals(thisDir));
-      expect(verifier.outputDirectory.path, equals(new Directory("OUTPUT").path));
     });
 
     test("parseArguments complains if there aren't exactly 3 positional arguments", () {
