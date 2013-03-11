@@ -1,12 +1,9 @@
 doc-code-verify
 ==============
 
-doc-code-verify is a tool to verify source code into documentation. Keeping the
-source code separate of the documentation makes it easier to work with and
-easier to test. Merging the two can be part of your build process.
-
-See the project announcement:
-http://news.dartlang.org/2012/12/darts-approach-to-illiterate.html
+doc-code-verify is a tool to verify source code in the documentation. It checks
+that all code snippets in the documentaion are also in the code source thus ensuring
+that the documentation is always up to date.
 
 Setup
 -----
@@ -24,40 +21,26 @@ Usage
 Start by creating a directory and putting some documentation into it. The
 documentation can have lines that look like this:
 
-	VERIFY(my_example_name)
+	// BEGIN(my_example_name)
+	Source code
+	// END(my_example_name)
 
 Now, create another directory and put some code in it. You can have examples
 such as:
 
 	// BEGIN(my_example_name)
-	Lots of source code
+	Source code
 	// END(my_example_name)
 
-To create a copy of the documentation with examples from the source code
-verifyd into it, run:
-
-	doc_code_verify.dart DOCUMENTATION CODE OUTPUT
-
-The DOCUMENTATION and CODE directories will not be changed. The OUTPUT
-directory will end up with the same structure as the DOCUMENTATION directory.
+doc-code-verify will check that the given source code between the begin and end
+tags are identical for each example. If there are any differences, doc-code-verify
+display the two versions and allow the user to make corrections accordingly.
+The DOCUMENTATION and CODE directories will not be changed.
 
 Details
 -------
 
 To get usage, run: doc_code_verify.dart --help
-
-It's okay to use the same directory for DOCUMENTATION and for CODE, but you
-must use a different directory for OUTPUT.
-
-In general, the syntax is line-oriented. I.e. each directive should be on its
-own line. However, putting other things on the line, such as comment markers,
-is generally okay.
-
-If you want to verify an example in the middle of a line and automatically trim
-whitespace around the example, use this syntax (notice the parenthesis around
-the VERIFY):
-
-	This line shows how to verify a (VERIFY(small_example)) inline.
 
 Example names can contain anything, except a closing parenthesis. They can
 even contain whitespace, but whitespace is significant!
