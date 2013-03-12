@@ -221,10 +221,9 @@ class DocCodeVerifier {
       }
     }
 
-    if (positionalArguments.length == 3) {
+    if (positionalArguments.length == 2) {
       documentationDirectory = resolveDirectoryOrExit(positionalArguments[0]);
       codeDirectory = resolveDirectoryOrExit(positionalArguments[1]);
-
     } else {
       errorsEncountered = true;
       print("$scriptName: Expected 3 positional arguments\n${getUsage()}");

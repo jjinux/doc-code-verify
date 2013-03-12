@@ -255,19 +255,17 @@ void main() {
 
     test("parseArguments accepts exactly 3 positional arguments", () {
       String thisDir = scriptDir.path;
-      verifier.parseArguments([thisDir, thisDir, "OUTPUT"]);
+      verifier.parseArguments([thisDir, thisDir]);
       expect(verifier.errorsEncountered, isFalse);
       expect(verifier.documentationDirectory.path, equals(thisDir));
-      expect(verifier.codeDirectory.path, equals(thisDir));
     });
 
-    test("parseArguments complains if there aren't exactly 3 positional arguments", () {
+    test("parseArguments complains if there aren't exactly 2 positional arguments", () {
       var printedError = false;
 
       void _print(String s) {
         expect(s, stringContainsInOrder(["doc_code_verify.dart: Expected 3 positional arguments",
-                                         "usage: doc_code_verify.dart",
-                                         "DOCUMENTATION CODE OUTPUT"]));
+                                         "usage: doc_code_verify.dart"]));
         printedError = true;
       }
 
@@ -337,7 +335,7 @@ void main() {
     });
 
     test("parseArguments should resolve directories", () {
-      verifier.parseArguments(['.', '.', 'irrelevant']);
+      verifier.parseArguments(['.', '.']);
       expect(new Path(verifier.documentationDirectory.path).isAbsolute, isTrue);
       expect(new Path(verifier.codeDirectory.path).isAbsolute, isTrue);
     });
@@ -450,7 +448,7 @@ void main() {
     // This test is pretty high level.
     test("main does everything", () {
       callWithTemporaryDirectorySync((Directory tempDir) {
-        verifier.main(["--delete-first", scriptDir.path, scriptDir.path, tempDir.path],
+        verifier.main(["--delete-first", scriptDir.path, scriptDir.path],
             print: printNothing);
         expect(verifier.errorsEncountered, isFalse);
       });
