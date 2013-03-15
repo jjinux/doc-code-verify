@@ -137,6 +137,58 @@ void main() {
       expect(verifier.examples["someName"].join(),
              equalsIgnoringWhitespace("line"));
     });
+    
+    test("verifyExamples complains if not in source", () {
+      var printedError = false;
+
+      void _print(String s) {
+        expect(s, equals("'someName' not found in code directory."));
+        printedError = true;
+      }
+
+      verifier.verifyExamples("""
+        // BEGIN(someName)
+        line
+        // END(someName)
+      """, print: _print);
+      
+      expect(verifier.errorsEncountered, isTrue);
+      expect(printedError, isTrue);
+    });
+    
+    test('verifyExamples returns with no errors', () {
+      verifier.scanForExamples("""
+        // BEGIN(add)
+        num add(num a, num b) {
+          return a + b;
+        }
+        // END(add)
+
+        void main() {
+          print("Hello, World!");
+        }
+      """);
+      
+      verifier.verifyExamples("""
+        // BEGIN(add)
+        num add(num a, num b) {
+          return a + b;
+        }
+        // END(add)
+
+        void main() {
+          print("Hello, World!");
+        }
+      """);
+
+      expect(verifier.examples["add"].join(), equalsIgnoringWhitespace("""
+        num add(num a, num b) {
+          return a + b;
+        }
+      """));
+      
+      expect(verifier.errorsEncountered, equals(false));
+    });
 
     test('scanDirectoryForExamples can scan this directory for examples', () {
       // BEGIN(thisTestIsSoMeta)
@@ -366,5 +418,5 @@ void main() {
     test("rtrim trims the right side of a string", () {
       expect(rtrim(" \tfoo\t "), equals(" \tfoo"));
     });
-  });
+});
 }

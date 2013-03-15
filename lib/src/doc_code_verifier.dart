@@ -78,6 +78,51 @@ class DocCodeVerifier {
       }
     });
   }
+  
+/// Scan input for examples, verify in [examples].
+  void verifyExamples(String sourceCode, {PrintFunction print: print}) {
+    List<String> lines = sourceCode.split(newlineRegExp);
+    var examplesToVerify = new Map<String, List<String>>();
+    var openExamples = new Set<String>();
+    lines.forEach((line) {
+
+      Match beginMatch = beginRegExp.firstMatch(line);
+      if (beginMatch != null) {
+        openExamples.add(beginMatch[1]);
+        return;
+      }
+
+      Match endMatch = endRegExp.firstMatch(line);
+      if (endMatch != null) {
+        var name = endMatch[1];
+        if (!openExamples.remove(name)) {
+          errorsEncountered = true;
+          print("$scriptName: BEGIN for `$name` not found; spelling error?");
+        }
+        var exampleToVerify = examplesToVerify[name].join();
+        var sourceExample = null;
+        if (examples.containsKey(name)){
+          sourceExample = examples[name].join();
+          if (exampleToVerify != sourceExample){
+              errorsEncountered = true;
+              print("'$name' in documentation did not match '$name' in the source code.");
+          }
+        }
+        else{
+          errorsEncountered = true;
+          print ("'$name' not found in code directory.");
+        }
+        return;
+      }
+
+      if (!openExamples.isEmpty) {
+        openExamples.forEach((exampleName) {
+          examplesToVerify.putIfAbsent(exampleName, () => new List<String>());
+          examplesToVerify[exampleName].add(line);
+        });
+      }
+    });
+  }
 
   /**
    * Scan an entire directory for examples and update [examples].
@@ -102,6 +147,26 @@ class DocCodeVerifier {
     // BEGIN(symlinkExample)
     // 1
     // END(symlinkExample)
+  }
+  
+  /**
+   * Scan an entire directory for examples and verify they already exist in [examples].
+   * 
+   * Because of the way pub uses symlinks, it's common to see the same file
+   * multiple times. Ignore files we've already seen.
+   */
+  void verifyDirectoryForExamples(Directory documentationDirectory) {
+    var pathsSeen = new Set<String>();
+    for (FileSystemEntity fse in documentationDirectory.listSync(recursive: true)) {
+      if (!(fse is File)) continue;
+      String path = fse.fullPathSync();
+      if (pathsSeen.contains(path)) continue;
+      pathsSeen.add(path);
+      Path pathPath = new Path(path);  // :)
+      if (isPrivate(pathPath)) continue;
+      var sourceCode = new File(path).readAsStringSync(encoding);
+      verifyExamples(sourceCode);
+    }
   }
 
   /**
@@ -304,6 +369,7 @@ class DocCodeVerifier {
     parseArguments(arguments, print: print, exit: exit);
     if (errorsEncountered) return;
     scanDirectoryForExamples(codeDirectory);
+    verifyDirectoryForExamples(documentationDirectory);
   }
 }
 
