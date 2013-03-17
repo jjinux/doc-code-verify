@@ -189,6 +189,44 @@ void main() {
       
       expect(verifier.errorsEncountered, equals(false));
     });
+    
+    test('verifyExamples complains if source does not match', () {
+      verifier.scanForExamples("""
+        // BEGIN(add)
+        num add(num a, num b) {
+          return a + b;
+        }
+        // END(add)
+
+        void main() {
+          print("Hello, World!");
+        }
+      """);
+      
+      verifier.verifyExamples("""
+        // BEGIN(add)
+        num add(num a, num b) {
+          return a * b;
+        }
+        // END(add)
+
+        void main() {
+          print("Hello, World!");
+        }
+      """);
+
+      expect(verifier.examples["add"].join(), equalsIgnoringWhitespace("""
+        num add(num a, num b) {
+          return a + b;
+        }
+      """));
+      
+      void _print(String s) {
+        expect(s, equals("'add' in documentation did not match 'add' in the source code."));
+      }
+      
+      expect(verifier.errorsEncountered, equals(true));
+    });
 
     test('scanDirectoryForExamples can scan this directory for examples', () {
       // BEGIN(thisTestIsSoMeta)
