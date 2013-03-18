@@ -355,91 +355,6 @@ void main() {
       expect(verifier.isPrivate(new Path('./foo/bar')), isFalse);
     });
 
-    test("htmlEscapeFilter escapes HTML", () {
-      expect(DocCodeVerifier.htmlEscapeFilter(["<blink>", "hi", "</blink>"]),
-             equals(["&lt;blink&gt;", "hi", "&lt;/blink&gt;"]));
-    });
-
-    test("indentFilter idents code", () {
-      expect(DocCodeVerifier.indentFilter(["Hi", "There"]),
-             equals(["\tHi", "\tThere"]));
-    });
-
-    test("unindentFilter unindents code", () {
-      expect(DocCodeVerifier.unindentFilter(["  1",
-                                           "  2"]),
-             equals(["1",
-                     "2"]));
-    });
-
-    test("unindentFilter unindents code where the first line is indented the most", () {
-      expect(DocCodeVerifier.unindentFilter(["\t    1",
-                                           "\t  2",
-                                           "\t    3"]),
-             equals(["  1",
-                     "2",
-                     "  3"]));
-    });
-
-    test("unindentFilter does nothing for unindented code", () {
-      expect(DocCodeVerifier.unindentFilter(["1",
-                                           "2",
-                                           "3"]),
-             equals(["1",
-                     "2",
-                     "3"]));
-    });
-
-    test("unindentFilter handles empty lists", () {
-      expect(DocCodeVerifier.unindentFilter([]),
-             equals([]));
-    });
-
-    test("unindentFilter does not try to handle inconsistent indentation", () {
-      expect(DocCodeVerifier.unindentFilter(["\t1",
-                                           "  2",
-                                           "    3"
-                                           "        4"]),
-             equals(["\t1",
-                     "  2",
-                     "    3"
-                     "        4"]));
-    });
-
-    test("unindentFilter handles really awkward short lines", () {
-      expect(DocCodeVerifier.unindentFilter(["    1",
-                                           "2"]),
-             equals(["    1",
-                     "2"]));
-    });
-
-    test("unindentFilter handles blank lines and lines with only indentation", () {
-      expect(DocCodeVerifier.unindentFilter(["  1",
-                                           "",
-                                           " ",
-                                           "    2"]),
-             equals(["1",
-                     "",
-                     "",
-                     "  2"]));
-    });
-
-    test("getFilters should return the right filters for HTML", () {
-      List<Filter> filters = verifier.getFilters("index.html");
-      List<String> filtered = verifier.applyFilters(filters, ["  a > b;",
-                                                            "  c(&d);"]);
-      expect(filtered, equals(["a &gt; b;",
-                               "c(&amp;d);"]));
-    });
-
-    test("getFilters should return the right filters for plain text", () {
-      List<Filter> filters = verifier.getFilters("plain.txt");
-      List<String> filtered = verifier.applyFilters(filters, ["    >>> Hi",
-                                                            "    >>> There!"]);
-      expect(filtered, equals(["\t>>> Hi",
-                               "\t>>> There!"]));
-    });
-
     // This test is pretty high level.
     test("main does everything", () {
       callWithTemporaryDirectorySync((Directory tempDir) {
@@ -449,12 +364,5 @@ void main() {
       });
     });
 
-    test("ltrim trims the left side of a string", () {
-      expect(ltrim(" \tfoo\t "), equals("foo\t "));
-    });
-
-    test("rtrim trims the right side of a string", () {
-      expect(rtrim(" \tfoo\t "), equals(" \tfoo"));
-    });
 });
 }

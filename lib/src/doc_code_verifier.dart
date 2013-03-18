@@ -25,17 +25,6 @@ class DocCodeVerifier {
   static const indentation = "\t";
   String scriptName;
   
-  /**
-   * This is a list of filter rules.
-   *
-   * Each filter rule is applied in order. The first one that matches gets
-   * used.
-   */
-  static final List<FilterRule> filterRules = [
-    new FilterRule(new RegExp(r"\.(html|xml)$"), [unindentFilter, htmlEscapeFilter]),
-    new FilterRule(new RegExp(r".*$"), [unindentFilter, indentFilter])
-  ];
-
   Directory documentationDirectory;
   Directory codeDirectory;
   bool errorsEncountered = false;
@@ -169,37 +158,6 @@ class DocCodeVerifier {
     }
   }
 
-  /**
-   * Lookup the given example and return it after applying filters.
-   *
-   * If the documentation refers to an example that doesn't exist:
-   *
-   *  - Set errorsEncountered to true
-   *  - Print an error message
-   *  - Translate the example to an error message
-   */
-  List<String> lookupExample(String exampleName,
-      {List<Filter> filters: const [], PrintFunction print: print}) {
-    List<String> example = examples[exampleName];
-    List<String> lines;
-
-    // Complain if we can't find the right example.
-    if (example == null) {
-      errorsEncountered = true;
-      var error = "No such example: $exampleName";
-      print("$scriptName: $error");
-      lines = ["ERROR: $error$newline"];
-    }
-
-    // Otherwise, use the example we found.
-    else {
-      lines = example;
-    }
-
-    // Make sure to apply filters.
-    return applyFilters(filters, lines);
-  }
-
   /// Parse command-line arguments.
   void parseArguments(List<String> arguments, {PrintFunction print: print,
       ExitFunction exit: exit}) {
@@ -263,106 +221,6 @@ class DocCodeVerifier {
     });
   }
 
-  static List<String> htmlEscapeFilter(List<String> lines) {
-    return new List.from(lines.map(htmlEscape));
-  }
-
-  static List<String> indentFilter(List<String> lines) {
-    return new List.from(lines.map((s) => "$indentation$s"));
-  }
-
-  /**
-   * Remove the indentation from the given lines.
-   *
-   * Only remove as much indentation as the line with the least amount of
-   * indentation.
-   */
-  static List<String> unindentFilter(List<String> lines) {
-    // Make a copy so that we can modify it in place.
-    lines = new List<String>.from(lines);
-
-    // Make sure there is at least one line.
-    if (!lines.isEmpty) {
-
-      // Figure out how much indentation the first line has.
-      var indentation = new List<String>();
-      for (String char in lines[0].split("")) {
-        if (char == " " || char == "\t") {
-          indentation.add(char);
-        } else {
-          break;
-        }
-      }
-
-      // Figure out the least amount of indentation any of the other lines has.
-      for (var i = 1; i < lines.length; i++) {
-        String line = lines[i];
-        List<String> chars = line.split("");
-
-        // Lines that only have whitespace should be set to "" and ignored.
-        var whitespaceOnly = true;
-        for (var char in chars) {
-          if (char != " " && char != "\t") {
-            whitespaceOnly = false;
-            break;
-          }
-        }
-        if (whitespaceOnly) {
-          lines[i] = "";
-        } else {
-
-          // If the line has something other than whitespace, see how its
-          // indentation compares to the least amount of indentation we've
-          // seen so far.
-          for (var j = 0; j < indentation.length && j < chars.length; j++) {
-            String char = chars[j];
-            if ((char != " " && char != "\t") ||
-                char != indentation[j]) {
-
-              // We found a new line with less indentation.
-              indentation.removeRange(j, indentation.length - j);
-              break;
-            }
-          }
-        }
-      }
-
-      // Loop over all the lines, and remove the right amount of indentation.
-      for (var i = 0; i < lines.length; i++) {
-        String line = lines[i];
-
-        // Ignore blank lines.
-        if (line != "") {
-
-          // Otherwise, trim off the right amount of indentation.
-          List<String> chars = line.split("");
-          List<String> unindented = chars.getRange(indentation.length, chars.length - indentation.length);
-          lines[i] = unindented.join();
-        }
-      }
-    }
-
-    return lines;
-  }
-
-  /// Given a filename, return a list of filters appropriate for that file.
-  List<Filter> getFilters(String filename) {
-    for (var rule in filterRules) {
-      if (rule.regExp.hasMatch(filename)) {
-        return rule.filters;
-      }
-    }
-    return [];
-  }
-
-  /// Apply a list of filters to a list of lines.
-  List<String> applyFilters(List<Filter> filters, List<String> lines) {
-    for (var filter in filters) {
-      lines = filter(lines);
-    }
-    return lines;
-  }
-
   /// This is a testable version of the main function.
   void main(List<String> arguments, {PrintFunction print: print,
       ExitFunction exit: exit}) {
@@ -371,19 +229,6 @@ class DocCodeVerifier {
     scanDirectoryForExamples(codeDirectory);
     verifyDirectoryForExamples(documentationDirectory);
   }
-}
-
-/**
- * Escapes HTML-special characters of [text] so that the result can be
- * included verbatim in HTML source code, either in an element body or in an
- * attribute value.
- */
-String htmlEscape(String text) {
-  return text.replaceAll("&", "&amp;")
-             .replaceAll("<", "&lt;")
-             .replaceAll(">", "&gt;")
-             .replaceAll('"', "&quot;")
-             .replaceAll("'", "&apos;");
 }
 
 /// This is stuff to make testing easier.
@@ -410,14 +255,4 @@ class FilterRule {
   final RegExp regExp;
   final List<Filter> filters;
   const FilterRule(this.regExp, this.filters);
-}
-
-/// Return s without the beginning whitespace.
-String ltrim(String s) {
-  return s.replaceFirst(new RegExp(r"^\s+"), "");
-}
-
-/// Return s without the trailing whitespace.
-String rtrim(String s) {
-  return s.replaceFirst(new RegExp(r"\s+$"), "");
 }
