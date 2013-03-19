@@ -34,7 +34,7 @@ such as:
 
 doc-code-verify will check that the given source code between the begin and end
 tags are identical for each example. If there are any differences, doc-code-verify
-display the two versions and allow the user to make corrections accordingly.
+will display the two versions and allow the user to make corrections accordingly.
 The DOCUMENTATION and CODE directories will not be changed.
 
 Details
@@ -51,7 +51,7 @@ source code (especially Dart).
 
 Example blocks may overlap with one another.
 
-If two blocks share the same name, they'll be concatenated.
+If two blocks have the same name, it'll display a warning.
 
 If you leave out the END for a block, it'll include the rest of the file.
 
