@@ -8,6 +8,8 @@ import 'package:doc_code_verify/doc_code_verifier.dart';
 
 Directory get scriptDir => new File(new Options().script).directorySync();
 Directory get projectDir => new Directory(new Path(scriptDir.path).append("..").canonicalize().toNativePath());
+Directory get sourceDir => new Directory(new Path(scriptDir.path).append("/sourceDir").canonicalize().toNativePath());
+Directory get documentationDir => new Directory(new Path(scriptDir.path).append("/documentationDir").canonicalize().toNativePath());
 
 /**
  * Call a callback with a temporary directory.
@@ -359,7 +361,7 @@ void main() {
     // This test is pretty high level.
     test("main does everything", () {
       callWithTemporaryDirectorySync((Directory tempDir) {
-        verifier.main(["--delete-first", scriptDir.path, scriptDir.path],
+        verifier.main(["--delete-first", sourceDir.path, documentationDir.path],
             print: printNothing);
         expect(verifier.errorsEncountered, isFalse);
       });
