@@ -45,14 +45,21 @@ class DocCodeVerifier {
 
       Match beginMatch = beginRegExp.firstMatch(line);
       if (beginMatch != null) {
-        openExamples.add(beginMatch[1]);
+        var exampleName = beginMatch[1];
+        if (examples.containsKey(exampleName)) {
+          print("Warning '$exampleName' was already used!");
+        }
+        else {
+          openExamples.add(beginMatch[1]);
+        }
         return;
       }
 
       Match endMatch = endRegExp.firstMatch(line);
       if (endMatch != null) {
         var name = endMatch[1];
-        if (!openExamples.remove(name)) {
+        openExamples.remove(name); 
+        if(!examples.containsKey(name)){
           errorsEncountered = true;
           print("$scriptName: BEGIN for `$name` not found; spelling error?");
         }
@@ -77,13 +84,7 @@ class DocCodeVerifier {
 
       Match beginMatch = beginRegExp.firstMatch(line);
       if (beginMatch != null) {
-        var exampleName = beginMatch[1];
-        if (examples.containsKey(exampleName)) {
-          print("Warning '$exampleName' was already used!");
-        }
-        else {
           openExamples.add(beginMatch[1]);
-        }
         return;
       }
 
@@ -115,7 +116,7 @@ class DocCodeVerifier {
     });
     openExamples.forEach((exampleName) {
       errorsEncountered = true;
-      print("$scriptName: BEGIN for `$exampleName` not found; spelling error?");
+      print("$scriptName: END for `$exampleName` not found; spelling error?");
     });
   }
 

@@ -98,7 +98,7 @@ void main() {
       """));
     });
 
-    test('scanForExamples concatenates examples with the same name', () {
+    test('scanForExamples does not concatenate examples with the same name', () {
       verifier.scanForExamples("""
         // BEGIN(example)
         line
@@ -111,7 +111,6 @@ void main() {
       """);
 
       expect(verifier.examples["example"].join(), equalsIgnoringWhitespace("""
-        line
         line
       """));
     });
@@ -191,6 +190,12 @@ void main() {
     });
     
     test('verifyExamples complains if source does not match', () {
+      var printedError = false;
+
+      void _print(String s) {
+        expect(s, equals("'add' in documentation did not match 'add' in the source code."));
+        printedError = true;
+      }
       verifier.scanForExamples("""
         // BEGIN(add)
         num add(num a, num b) {
@@ -213,17 +218,13 @@ void main() {
         void main() {
           print("Hello, World!");
         }
-      """);
+      """, print: _print);
 
       expect(verifier.examples["add"].join(), equalsIgnoringWhitespace("""
         num add(num a, num b) {
           return a + b;
         }
       """));
-      
-      void _print(String s) {
-        expect(s, equals("'add' in documentation did not match 'add' in the source code."));
-      }
       
       expect(verifier.errorsEncountered, equals(true));
     });
