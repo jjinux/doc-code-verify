@@ -93,8 +93,8 @@ class DocCodeVerifier {
         var name = endMatch[1];
         openExamples.remove(name);
         if ((examples.containsKey(name)) && (examplesToVerify.containsKey(name))){
-          var exampleToVerify = examplesToVerify[name].join();
-          var sourceExample = examples[name].join();
+          var exampleToVerify = collapseWhitespace(examplesToVerify[name].join());
+          var sourceExample = collapseWhitespace(examples[name].join());
           if (exampleToVerify != sourceExample){
               errorsEncountered = true;
               print("'$name' in documentation did not match '$name' in the source code.");
@@ -227,7 +227,29 @@ class DocCodeVerifier {
       return false;
     });
   }
-
+  
+  /**
+   * Utility function to collapse whitespace runs to single spaces
+   * and strip leading/trailing whitespace.
+   */
+  String collapseWhitespace(_string) {
+    bool isWhitespace(String ch) => (' \n\r\t'.indexOf(ch) >= 0);
+    StringBuffer result = new StringBuffer();
+    bool skipSpace = true;
+    for (var i = 0; i < _string.length; i++) {
+      var character = _string[i];
+      if (isWhitespace(character)) {
+        if (!skipSpace) {
+          result.write(' ');
+          skipSpace = true;
+        }
+      } else {
+        result.write(character);
+        skipSpace = false;
+      }
+    }
+    return result.toString().trim();
+  }
   /// This is a testable version of the main function.
   void main(List<String> arguments, {PrintFunction print: print,
       ExitFunction exit: exit}) {

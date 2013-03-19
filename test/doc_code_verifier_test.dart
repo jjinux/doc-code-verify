@@ -191,6 +191,42 @@ void main() {
       expect(verifier.errorsEncountered, equals(false));
     });
     
+    test('verifyExamples accepts when whitespace is not the same', () {
+      verifier.scanForExamples("""
+        // BEGIN(add)
+        num    add(num   a, num   b)   {
+
+          return    a    +   b;
+
+        }
+        // END(add)
+
+        void main() {
+          print("Hello, World!");
+        }
+      """);
+      
+      verifier.verifyExamples("""
+        // BEGIN(add)
+        num add(num a, num b) {
+          return a + b;
+        }
+        // END(add)
+
+        void main() {
+          print("Hello, World!");
+        }
+      """);
+
+      expect(verifier.examples["add"].join(), equalsIgnoringWhitespace("""
+        num add(num a, num b) {
+          return a + b;
+        }
+      """));
+      
+      expect(verifier.errorsEncountered, equals(false));
+    });
+    
     test('verifyExamples complains if source does not match', () {
       var printedError = false;
 
@@ -365,6 +401,10 @@ void main() {
             print: printNothing);
         expect(verifier.errorsEncountered, isFalse);
       });
+    });
+    
+    test("collapseWhitespace removes ther proper whitespace", () {
+      expect(verifier.collapseWhitespace("   test    string  . "), equals("test string ."));
     });
 
 });

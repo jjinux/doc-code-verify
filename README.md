@@ -51,9 +51,15 @@ source code (especially Dart).
 
 Example blocks may overlap with one another.
 
-If two blocks have the same name, it'll display a warning.
+Examples in the code directory do not have to have matching whitespace to examples
+in the documentation directory.
 
-If you leave out the END for a block, it'll include the rest of the file.
+If two blocks have the same name, it'll display a warning and only the first
+use of that block in the cource directory will be used to verify against.
+
+If you leave out the END for a block in the code directory, it'll include the rest
+of the file. If you leave out the END for a block in the documentation directory,
+it'll give an error. 
 
 Testing
 -------
