@@ -77,27 +77,29 @@ class DocCodeVerifier {
 
       Match beginMatch = beginRegExp.firstMatch(line);
       if (beginMatch != null) {
-        openExamples.add(beginMatch[1]);
+        var exampleName = beginMatch[1];
+        if (examples.containsKey(exampleName)) {
+          print("Warning '$exampleName' was already used!");
+        }
+        else {
+          openExamples.add(beginMatch[1]);
+        }
         return;
       }
 
       Match endMatch = endRegExp.firstMatch(line);
       if (endMatch != null) {
         var name = endMatch[1];
-        if (!openExamples.remove(name)) {
-          errorsEncountered = true;
-          print("$scriptName: BEGIN for `$name` not found; spelling error?");
-        }
-        var exampleToVerify = examplesToVerify[name].join();
-        var sourceExample = null;
-        if (examples.containsKey(name)){
-          sourceExample = examples[name].join();
+        openExamples.remove(name);
+        if ((examples.containsKey(name)) && (examplesToVerify.containsKey(name))){
+          var exampleToVerify = examplesToVerify[name].join();
+          var sourceExample = examples[name].join();
           if (exampleToVerify != sourceExample){
               errorsEncountered = true;
               print("'$name' in documentation did not match '$name' in the source code.");
           }
         }
-        else{
+        else if(!examples.containsKey(name)){
           errorsEncountered = true;
           print ("'$name' not found in code directory.");
         }
@@ -110,6 +112,10 @@ class DocCodeVerifier {
           examplesToVerify[exampleName].add(line);
         });
       }
+    });
+    openExamples.forEach((exampleName) {
+      errorsEncountered = true;
+      print("$scriptName: BEGIN for `$exampleName` not found; spelling error?");
     });
   }
 
