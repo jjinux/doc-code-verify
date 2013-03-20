@@ -231,9 +231,10 @@ void main() {
       var printedError = false;
 
       void _print(String s) {
-        expect(s, equals("'add' in documentation did not match 'add' in the source code."));
+        expect(s, equals("'add' in documentation did not match 'add' in the source code"));
         printedError = true;
       }
+      
       verifier.scanForExamples("""
         // BEGIN(add)
         num add(num a, num b) {
@@ -362,12 +363,6 @@ void main() {
       });
     });
 
-    test("parseArguments can set the --delete-first flag", () {
-      expect(verifier.deleteFirst, isFalse);
-      verifier.parseArguments(["--delete-first"], print: printNothing);
-      expect(verifier.deleteFirst, isTrue);
-    });
-
     test("parseArguments should resolve directories", () {
       verifier.parseArguments(['.', '.']);
       expect(new Path(verifier.documentationDirectory.path).isAbsolute, isTrue);
@@ -406,6 +401,5 @@ void main() {
     test("collapseWhitespace removes ther proper whitespace", () {
       expect(verifier.collapseWhitespace("   test    string  . "), equals("test string ."));
     });
-
-});
+  });
 }

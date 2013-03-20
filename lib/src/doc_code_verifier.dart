@@ -28,7 +28,6 @@ class DocCodeVerifier {
   Directory documentationDirectory;
   Directory codeDirectory;
   bool errorsEncountered = false;
-  bool deleteFirst = false;
 
   /// Each example has a name and a list of lines.
   Map<String, List<String>> examples;
@@ -47,7 +46,7 @@ class DocCodeVerifier {
       if (beginMatch != null) {
         var exampleName = beginMatch[1];
         if (examples.containsKey(exampleName)) {
-          print("Warning '$exampleName' was already used!");
+          print("Warning '$exampleName' was already used");
         }
         else {
           openExamples.add(beginMatch[1]);
@@ -75,7 +74,7 @@ class DocCodeVerifier {
     });
   }
   
-/// Scan input for examples, verify in [examples].
+  /// Scan input for examples, verify in [examples].
   void verifyExamples(String sourceCode, {PrintFunction print: print}) {
     List<String> lines = sourceCode.split(newlineRegExp);
     var examplesToVerify = new Map<String, List<String>>();
@@ -84,7 +83,7 @@ class DocCodeVerifier {
 
       Match beginMatch = beginRegExp.firstMatch(line);
       if (beginMatch != null) {
-          openExamples.add(beginMatch[1]);
+        openExamples.add(beginMatch[1]);
         return;
       }
 
@@ -92,12 +91,12 @@ class DocCodeVerifier {
       if (endMatch != null) {
         var name = endMatch[1];
         openExamples.remove(name);
-        if ((examples.containsKey(name)) && (examplesToVerify.containsKey(name))){
+        if (examples.containsKey(name) && examplesToVerify.containsKey(name)){
           var exampleToVerify = collapseWhitespace(examplesToVerify[name].join());
           var sourceExample = collapseWhitespace(examples[name].join());
           if (exampleToVerify != sourceExample){
               errorsEncountered = true;
-              print("'$name' in documentation did not match '$name' in the source code.");
+              print("'$name' in documentation did not match '$name' in the source code");
           }
         }
         else if(!examples.containsKey(name)){
@@ -176,9 +175,6 @@ class DocCodeVerifier {
         exit(0);
         throw "exit should not return";
       }
-      if (arg == "--delete-first") {
-        deleteFirst = true;
-      }
       if (!arg.startsWith("-")) {
         positionalArguments.add(arg);
       }
@@ -250,6 +246,7 @@ class DocCodeVerifier {
     }
     return result.toString().trim();
   }
+  
   /// This is a testable version of the main function.
   void main(List<String> arguments, {PrintFunction print: print,
       ExitFunction exit: exit}) {
