@@ -46,7 +46,8 @@ class DocCodeVerifier {
       if (beginMatch != null) {
         var exampleName = beginMatch[1];
         if (examples.containsKey(exampleName)) {
-          print("Warning '$exampleName' was already used");
+          print("$scriptName: Warning, the name '$exampleName' was already used");
+          errorsEncountered = true;
         }
         else {
           openExamples.add(beginMatch[1]);
@@ -185,7 +186,7 @@ class DocCodeVerifier {
       codeDirectory = resolveDirectoryOrExit(positionalArguments[1]);
     } else {
       errorsEncountered = true;
-      print("$scriptName: Expected 3 positional arguments\n${getUsage()}");
+      print("$scriptName: Expected 2 positional arguments\n${getUsage()}");
     }
   }
 
@@ -208,7 +209,7 @@ class DocCodeVerifier {
 
   /// Return usage information.
   String getUsage() {
-    return "usage: $scriptName [-h] [--help] [--delete-first] DOCUMENTATION CODE OUTPUT";
+    return "usage: $scriptName [-h] [--help] DOCUMENTATION CODE OUTPUT";
   }
 
   /**
@@ -267,18 +268,3 @@ void printNothing(obj) {}
 typedef void ExitFunction(int status);
 
 class Exit implements Exception {}
-
-/// A filter takes a list of lines and returns a list of lines.
-typedef List<String> Filter(List<String> lines);
-
-/**
- * A filter rule contains two things:
- *
- *  - A RegExp to match against file names
- *  - A list of filters to apply
- */
-class FilterRule {
-  final RegExp regExp;
-  final List<Filter> filters;
-  const FilterRule(this.regExp, this.filters);
-}

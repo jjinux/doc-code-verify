@@ -101,6 +101,13 @@ void main() {
     });
 
     test('scanForExamples does not concatenate examples with the same name', () {
+      var printedError = false;
+      
+      void _print(String s) {
+        expect(s, equals("doc_code_verify.dart: Warning, the name 'example' was already used"));
+        printedError = true;
+      }
+        
       verifier.scanForExamples("""
         // BEGIN(example)
         line
@@ -110,11 +117,13 @@ void main() {
         // BEGIN(example)
         line
         // END(example)
-      """);
+      """, print: _print);
 
       expect(verifier.examples["example"].join(), equalsIgnoringWhitespace("""
         line
       """));
+      
+      expect(verifier.errorsEncountered, isTrue);
     });
     
     test("scanForExamples complains if you misspell the name of an END", () {
@@ -181,12 +190,6 @@ void main() {
           print("Hello, World!");
         }
       """);
-
-      expect(verifier.examples["add"].join(), equalsIgnoringWhitespace("""
-        num add(num a, num b) {
-          return a + b;
-        }
-      """));
       
       expect(verifier.errorsEncountered, equals(false));
     });
@@ -299,7 +302,7 @@ void main() {
       var printedError = false;
 
       void _print(String s) {
-        expect(s, stringContainsInOrder(["doc_code_verify.dart: Expected 3 positional arguments",
+        expect(s, stringContainsInOrder(["doc_code_verify.dart: Expected 2 positional arguments",
                                          "usage: doc_code_verify.dart"]));
         printedError = true;
       }
@@ -398,7 +401,7 @@ void main() {
       });
     });
     
-    test("collapseWhitespace removes ther proper whitespace", () {
+    test("collapseWhitespace removes the correct whitespace", () {
       expect(verifier.collapseWhitespace("   test    string  . "), equals("test string ."));
     });
   });
