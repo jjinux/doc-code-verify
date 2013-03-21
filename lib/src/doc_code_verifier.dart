@@ -48,8 +48,7 @@ class DocCodeVerifier {
         if (examples.containsKey(exampleName)) {
           print("$scriptName: Warning, the name '$exampleName' was already used");
           errorsEncountered = true;
-        }
-        else {
+        } else {
           openExamples.add(beginMatch[1]);
         }
         return;
@@ -223,29 +222,6 @@ class DocCodeVerifier {
       if (segment.startsWith('.')) return true; // Including '..'
       return false;
     });
-  }
-  
-  /**
-   * Utility function to collapse whitespace runs to single spaces
-   * and strip leading/trailing whitespace.
-   */
-  String collapseWhitespace(_string) {
-    bool isWhitespace(String ch) => (' \n\r\t'.indexOf(ch) >= 0);
-    StringBuffer result = new StringBuffer();
-    bool skipSpace = true;
-    for (var i = 0; i < _string.length; i++) {
-      var character = _string[i];
-      if (isWhitespace(character)) {
-        if (!skipSpace) {
-          result.write(' ');
-          skipSpace = true;
-        }
-      } else {
-        result.write(character);
-        skipSpace = false;
-      }
-    }
-    return result.toString().trim();
   }
   
   /// This is a testable version of the main function.

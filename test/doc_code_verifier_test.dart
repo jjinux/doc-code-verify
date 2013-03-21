@@ -400,9 +400,5 @@ void main() {
         expect(verifier.errorsEncountered, isFalse);
       });
     });
-    
-    test("collapseWhitespace removes the correct whitespace", () {
-      expect(verifier.collapseWhitespace("   test    string  . "), equals("test string ."));
-    });
   });
 }
