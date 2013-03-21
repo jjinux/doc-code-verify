@@ -120,12 +120,12 @@ class DocCodeVerifier {
   }
 
   /**
-   * Scan an entire directory for examples and update [examples].
+   * Scan an entire directory and pass all files to the specified methodToCall.
    * 
    * Because of the way pub uses symlinks, it's common to see the same file
    * multiple times. Ignore files we've already seen.
    */
-  void scanDirectoryForExamples(Directory sourceDirectory) {
+  void scanDirectory(Directory sourceDirectory, methodToCall) {
     var pathsSeen = new Set<String>();
     for (FileSystemEntity fse in sourceDirectory.listSync(recursive: true)) {
       if (!(fse is File)) continue;
@@ -135,7 +135,7 @@ class DocCodeVerifier {
       Path pathPath = new Path(path);  // :)
       if (isPrivate(pathPath)) continue;
       var sourceCode = new File(path).readAsStringSync(encoding);
-      scanForExamples(sourceCode);
+      methodToCall(sourceCode);
     }
 
     // This is used in a test. It only works if I put it in the lib directory.
@@ -144,26 +144,6 @@ class DocCodeVerifier {
     // END(symlinkExample)
   }
   
-  /**
-   * Scan an entire directory for examples and verify they already exist in [examples].
-   * 
-   * Because of the way pub uses symlinks, it's common to see the same file
-   * multiple times. Ignore files we've already seen.
-   */
-  void verifyDirectoryForExamples(Directory documentationDirectory) {
-    var pathsSeen = new Set<String>();
-    for (FileSystemEntity fse in documentationDirectory.listSync(recursive: true)) {
-      if (!(fse is File)) continue;
-      String path = fse.fullPathSync();
-      if (pathsSeen.contains(path)) continue;
-      pathsSeen.add(path);
-      Path pathPath = new Path(path);  // :)
-      if (isPrivate(pathPath)) continue;
-      var sourceCode = new File(path).readAsStringSync(encoding);
-      verifyExamples(sourceCode);
-    }
-  }
-
   /// Parse command-line arguments.
   void parseArguments(List<String> arguments, {PrintFunction print: print,
       ExitFunction exit: exit}) {
@@ -229,8 +209,8 @@ class DocCodeVerifier {
       ExitFunction exit: exit}) {
     parseArguments(arguments, print: print, exit: exit);
     if (errorsEncountered) return;
-    scanDirectoryForExamples(codeDirectory);
-    verifyDirectoryForExamples(documentationDirectory);
+    scanDirectory(codeDirectory, scanForExamples);
+    scanDirectory(documentationDirectory, verifyExamples);
   }
 }
 

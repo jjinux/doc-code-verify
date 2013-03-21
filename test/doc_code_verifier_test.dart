@@ -276,7 +276,7 @@ void main() {
       // meta meta meta
       // END(thisTestIsSoMeta)
             
-      verifier.scanDirectoryForExamples(scriptDir);
+      verifier.scanDirectory(projectDir, verifier.scanForExamples);
       expect(verifier.examples.length, greaterThan(1));
       expect(verifier.examples["thisTestIsSoMeta"].join(), equalsIgnoringWhitespace("""
         // meta meta meta
@@ -285,8 +285,8 @@ void main() {
     
     // Because of the way pub uses symlinks, it's common to see the same file
     // multiple times. Ignore files we've already seen.
-    test('scanDirectoryForExamples should ignore files it has already seen because of symlinks', () {
-      verifier.scanDirectoryForExamples(projectDir);
+    test('scanDirectory should ignore files it has already seen because of symlinks', () {
+      verifier.scanDirectory(projectDir, verifier.scanForExamples);
       expect(verifier.examples["symlinkExample"].join(),
              equalsIgnoringWhitespace("// 1"));
     });
