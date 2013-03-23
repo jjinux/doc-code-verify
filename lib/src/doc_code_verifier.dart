@@ -92,11 +92,14 @@ class DocCodeVerifier {
         var name = endMatch[1];
         openExamples.remove(name);
         if (examples.containsKey(name) && examplesToVerify.containsKey(name)){
-          var exampleToVerify = examplesToVerify[name].join('\n\t');
-          var sourceExample = examples[name].join('\n\t');
+          var sourceExample = examplesToVerify[name].join('\n\t');
+          var exampleToVerify = examples[name].join('\n\t');
           if (collapseWhitespace(exampleToVerify) != collapseWhitespace(sourceExample)){
               errorsEncountered = true;
-              print("$scriptName: '$name' in documentation did not match '$name' in the source code\n\t'$name' in the documentation looks like:\n\t$exampleToVerify \n\n\t'$name' in the source looks like:\n\t$sourceExample");         
+              print("""
+$scriptName: '$name' in documentation did not match '$name' in the source code
+\t'$name' in the documentation looks like:\n\t$exampleToVerify
+\n\t'$name' in the source looks like:\n\t$sourceExample""");         
           }
         }
         else if(!examples.containsKey(name)){

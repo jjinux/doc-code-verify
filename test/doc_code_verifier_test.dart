@@ -234,7 +234,12 @@ void main() {
       var printedError = false;
 
       void _print(String s) {
-        expect(s, equals("doc_code_verify.dart: 'add' in documentation did not match 'add' in the source code\n\t'add' in the documentation looks like:\n\t        num add(num a, num b) {\n\t          return a * b;\n\t        } \n\n\t'add' in the source looks like:\n\t        num add(num a, num b) {\n\t          return a + b;\n\t        }") );
+        expect(s, equals("""
+doc_code_verify.dart: 'add' in documentation did not match 'add' in the source code
+\t'add' in the documentation looks like:
+\t        num add(num a, num b) {\n\t          return a + b;\n\t        }
+\n\t'add' in the source looks like:
+\t        num add(num a, num b) {\n\t          return a * b;\n\t        }"""));
         printedError = true;
       }
       
