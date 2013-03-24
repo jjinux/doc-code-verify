@@ -104,7 +104,7 @@ void main() {
       var printedError = false;
       
       void _print(String s) {
-        expect(s, equals("doc_code_verify.dart: Warning, the name 'example' was already used"));
+        expect(s, equals("doc_code_verify.dart: Warning, the name `example` was already used"));
         printedError = true;
       }
         
@@ -152,7 +152,7 @@ void main() {
       var printedError = false;
 
       void _print(String s) {
-        expect(s, equals("doc_code_verify.dart: 'someName' not found in code directory."));
+        expect(s, equals("doc_code_verify.dart: `someName` not found in code directory"));
         printedError = true;
       }
 
@@ -160,6 +160,24 @@ void main() {
         // BEGIN(someName)
         line
         // END(someName)
+      """, print: _print);
+      
+      expect(verifier.errorsEncountered, isTrue);
+      expect(printedError, isTrue);
+    });
+    
+    test("verifyExamples complains if no END", () {
+      var printedError = false;
+
+      void _print(String s) {
+        expect(s, equals("doc_code_verify.dart: END for `someName` not found; spelling error?"));
+        printedError = true;
+      }
+
+      verifier.verifyExamples("""
+        // BEGIN(someName)
+        line
+        //(someName)
       """, print: _print);
       
       expect(verifier.errorsEncountered, isTrue);
@@ -266,12 +284,6 @@ doc_code_verify.dart: 'add' in documentation did not match 'add' in the source c
           print("Hello, World!");
         }
       """, print: _print);
-
-      expect(verifier.examples["add"].join(), equalsIgnoringWhitespace("""
-        num add(num a, num b) {
-          return a + b;
-        }
-      """));
       
       expect(verifier.errorsEncountered, equals(true));
     });

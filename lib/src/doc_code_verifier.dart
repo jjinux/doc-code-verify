@@ -46,7 +46,7 @@ class DocCodeVerifier {
       if (beginMatch != null) {
         var exampleName = beginMatch[1];
         if (examples.containsKey(exampleName)) {
-          print("$scriptName: Warning, the name '$exampleName' was already used");
+          print("$scriptName: Warning, the name `$exampleName` was already used");
           errorsEncountered = true;
         } else {
           openExamples.add(beginMatch[1]);
@@ -104,7 +104,7 @@ $scriptName: '$name' in documentation did not match '$name' in the source code
         }
         else if(!examples.containsKey(name)){
           errorsEncountered = true;
-          print ("$scriptName: '$name' not found in code directory.");
+          print ("$scriptName: `$name` not found in code directory");
         }
         return;
       }
