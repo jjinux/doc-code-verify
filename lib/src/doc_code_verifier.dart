@@ -21,7 +21,6 @@ class DocCodeVerifier {
   static final inlineVerifyRegExp = new RegExp("\\(VERIFY$nameInParens\\)");
   static const nameInParens = r"\(([^)]+)\)";
   static const newline = "\n";
-  static const encoding = Encoding.UTF_8;
   static const indentation = "\t";
   String scriptName;
   
@@ -137,7 +136,7 @@ $scriptName: '$name' in documentation did not match '$name' in the source code
       pathsSeen.add(path);
       Path pathPath = new Path(path);  // :)
       if (isPrivate(pathPath)) continue;
-      var sourceCode = new File(path).readAsStringSync(encoding);
+      var sourceCode = new File(path).readAsStringSync();
       methodToCall(sourceCode);
     }
 
