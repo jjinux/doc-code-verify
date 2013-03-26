@@ -116,7 +116,8 @@ void main() {
         line
         line
         // BEGIN(example)
-        line
+        2 lines
+        2 lines
         // END(example)
       """, print: _print);
 
