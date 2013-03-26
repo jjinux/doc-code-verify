@@ -99,8 +99,9 @@ void main() {
         line
       """));
     });
-
-    test('scanForExamples does not concatenate examples with the same name', () {
+    
+    //Each example can only have one block in the source.
+    test('scanForExamples does not concatenate examples with the same name in a file', () {
       var printedError = false;
       
       void _print(String s) {
@@ -118,6 +119,33 @@ void main() {
         line
         // END(example)
       """, print: _print);
+
+      expect(verifier.examples["example"].join(), equalsIgnoringWhitespace("""
+        line
+      """));
+      
+      expect(verifier.errorsEncountered, isTrue);
+    });
+    
+    test('scanForExamples complains if an example was added in another file', () {
+      var printedError = false;
+      
+      void _print(String s) {
+        expect(s, equals("doc_code_verify.dart: Warning, the name `example` was already used"));
+        printedError = true;
+      }
+        
+      verifier.scanForExamples("""
+        // BEGIN(example)
+        line
+        // END(example)
+      """, print: _print);
+      verifier.scanForExamples("""
+        // BEGIN(example)
+        line
+        // END(example)
+      """, print: _print);
+
 
       expect(verifier.examples["example"].join(), equalsIgnoringWhitespace("""
         line
@@ -146,6 +174,21 @@ void main() {
       expect(printedError, isTrue);
       expect(verifier.examples["someName"].join(),
              equalsIgnoringWhitespace("line"));
+    });
+    
+    //Ommitting an END statment should include the rest of the file in the source directory
+    test("scanForExamples accepts missing END statment", () {
+      verifier.scanForExamples("""
+        // BEGIN(someName)
+        line
+        line
+      """);
+      
+      expect(verifier.errorsEncountered, equals(false));
+      expect(verifier.examples["someName"].join(), equalsIgnoringWhitespace("""
+          line
+          line
+      """));
     });
     
     test("verifyExamples complains if not in source", () {
