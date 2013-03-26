@@ -55,7 +55,7 @@ Examples in the code directory do not have to have matching whitespace to exampl
 in the documentation directory.
 
 If two blocks have the same name, it'll display a warning and only the first
-use of that block in the cource directory will be used to verify against.
+use of that block in the source directory will be used to verify against.
 
 If you leave out the END for a block in the code directory, it'll include the rest
 of the file. If you leave out the END for a block in the documentation directory,
