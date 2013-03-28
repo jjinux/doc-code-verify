@@ -46,12 +46,7 @@ void main() {
 
     test('the syntax for example names is pretty permissive', () {
       expect(DocCodeVerifier.beginRegExp.firstMatch("BEGIN(a b/c)"), isNotNull);
-      expect(DocCodeVerifier.verifyBlockRegExp.firstMatch("VERIFY(a b/c)"), isNotNull);
       expect(DocCodeVerifier.endRegExp.firstMatch("END(a b/c)"), isNotNull);
-    });
-
-    test('correctly matches inline verifys', () {
-      expect(DocCodeVerifier.inlineVerifyRegExp.firstMatch("(VERIFY(example))"), isNotNull);
     });
 
     test('examples is empty by default', () {

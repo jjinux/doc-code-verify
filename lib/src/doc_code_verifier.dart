@@ -17,11 +17,7 @@ class DocCodeVerifier {
   static final newlineRegExp = new RegExp(r"\r\n|\r|\n");
   static final beginRegExp = new RegExp("BEGIN$nameInParens");
   static final endRegExp = new RegExp("END$nameInParens");
-  static final verifyBlockRegExp = new RegExp("VERIFY$nameInParens");
-  static final inlineVerifyRegExp = new RegExp("\\(VERIFY$nameInParens\\)");
   static const nameInParens = r"\(([^)]+)\)";
-  static const newline = "\n";
-  static const indentation = "\t";
   String scriptName;
   
   Directory documentationDirectory;
