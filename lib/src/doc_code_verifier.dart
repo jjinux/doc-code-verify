@@ -19,7 +19,7 @@ class DocCodeVerifier {
   static final endRegExp = new RegExp("END$nameInParens");
   static const nameInParens = r"\(([^)]+)\)";
   String scriptName;
-  
+
   Directory documentationDirectory;
   Directory codeDirectory;
   bool errorsEncountered = false;
@@ -68,7 +68,7 @@ class DocCodeVerifier {
       }
     });
   }
-  
+
   /// Scan [sourceCode] for examples, verify in [examples].
   void verifyExamples(String sourceCode, {PrintFunction print: print}) {
     List<String> lines = sourceCode.split(newlineRegExp);
@@ -93,7 +93,7 @@ class DocCodeVerifier {
             errorsEncountered = true;
             print("""$scriptName: '$name' in documentation did not match '$name' in the source code
 \t'$name' in the documentation looks like:\n\t$exampleToVerify
-\n\t'$name' in the source looks like:\n\t$sourceExample""");         
+\n\t'$name' in the source looks like:\n\t$sourceExample""");
           }
         }
         else if (!examples.containsKey(name)) {
@@ -110,7 +110,7 @@ class DocCodeVerifier {
         });
       }
     });
-    
+
     openExamples.forEach((exampleName) {
       errorsEncountered = true;
       print("$scriptName: END for `$exampleName` not found; spelling error?");
@@ -119,7 +119,7 @@ class DocCodeVerifier {
 
   /**
    * Scan an entire directory and pass all files to the specified methodToCall.
-   * 
+   *
    * Because of the way pub uses symlinks, it's common to see the same file
    * multiple times. Ignore files we've already seen.
    */
@@ -141,7 +141,7 @@ class DocCodeVerifier {
     // 1
     // END(symlinkExample)
   }
-  
+
   /// Parse command-line arguments.
   void parseArguments(List<String> arguments, {PrintFunction print: print,
       ExitFunction exit: exit}) {
@@ -201,7 +201,7 @@ class DocCodeVerifier {
       return false;
     });
   }
-  
+
   /// This is a testable version of the main function.
   void main(List<String> arguments, {PrintFunction print: print,
       ExitFunction exit: exit}) {

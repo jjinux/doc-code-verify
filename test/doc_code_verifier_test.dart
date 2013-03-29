@@ -94,16 +94,16 @@ void main() {
         line
       """));
     });
-    
+
     // Each example can only have one block in the source.
     test('scanForExamples does not concatenate examples with the same name in a file', () {
       var printedError = false;
-      
+
       void _print(String s) {
         expect(s, equals("doc_code_verify.dart: The name `example` was already used; ignoring"));
         printedError = true;
       }
-        
+
       verifier.scanForExamples("""
         // BEGIN(example)
         line
@@ -119,18 +119,18 @@ void main() {
       expect(verifier.examples["example"].join(), equalsIgnoringWhitespace("""
         line
       """));
-      
+
       expect(verifier.errorsEncountered, isTrue);
     });
-    
+
     test('scanForExamples complains if an example was added in another file', () {
       var printedError = false;
-      
+
       void _print(String s) {
         expect(s, equals("doc_code_verify.dart: The name `example` was already used; ignoring"));
         printedError = true;
       }
-        
+
       verifier.scanForExamples("""
         // BEGIN(example)
         line
@@ -145,11 +145,11 @@ void main() {
       expect(verifier.examples["example"].join(), equalsIgnoringWhitespace("""
         line
       """));
-      
+
       expect(verifier.errorsEncountered, isTrue);
       expect(printedError, isTrue);
     });
-    
+
     test("scanForExamples complains if you misspell the name of an END", () {
       var printedError = false;
 
@@ -165,29 +165,29 @@ void main() {
         line
         // EN""" """D(wrongName)
       """, print: _print);
-      
+
       expect(verifier.errorsEncountered, isTrue);
       expect(printedError, isTrue);
       expect(verifier.examples["someName"].join(),
              equalsIgnoringWhitespace("line"));
       expect(printedError, isTrue);
     });
-    
-    
+
+
     test("Omitting an END statment should include the rest of the file in the source directory", () {
       verifier.scanForExamples("""
         // BEGIN(someName)
         line
         line
       """);
-      
+
       expect(verifier.errorsEncountered, equals(false));
       expect(verifier.examples["someName"].join(), equalsIgnoringWhitespace("""
         line
         line
       """));
     });
-    
+
     test("verifyExamples complains if exaple not already in [examples]", () {
       var printedError = false;
 
@@ -201,11 +201,11 @@ void main() {
         line
         // END(someName)
       """, print: _print);
-      
+
       expect(verifier.errorsEncountered, isTrue);
       expect(printedError, isTrue);
     });
-    
+
     test("verifyExamples complains if no END", () {
       var printedError = false;
 
@@ -219,11 +219,11 @@ void main() {
         line
         //(someName)
       """, print: _print);
-      
+
       expect(verifier.errorsEncountered, isTrue);
       expect(printedError, isTrue);
     });
-    
+
     test('verifyExamples returns with no errors', () {
       verifier.scanForExamples("""
         // BEGIN(add)
@@ -236,7 +236,7 @@ void main() {
           print("Hello, World!");
         }
       """);
-      
+
       verifier.verifyExamples("""
         // BEGIN(add)
         num add(num a, num b) {
@@ -246,10 +246,10 @@ void main() {
         more documentaion
         }
       """);
-      
+
       expect(verifier.errorsEncountered, isFalse);
     });
-    
+
     test('verifyExamples accepts when whitespace is not the same', () {
       verifier.scanForExamples("""
         // BEGIN(add)
@@ -264,7 +264,7 @@ void main() {
           print("Hello, World!");
         }
       """);
-      
+
       verifier.verifyExamples("""
         // BEGIN(add)
         num add(num a, num b) {
@@ -276,10 +276,10 @@ void main() {
           print("Hello, World!");
         }
       """);
-      
+
       expect(verifier.errorsEncountered, isFalse);
     });
-    
+
     test('verifyExamples complains if source does not match', () {
       var printedError = false;
 
@@ -291,7 +291,7 @@ void main() {
 \t        num add(num a, num b) {\n\t          return a * b;\n\t        }"""));
         printedError = true;
       }
-      
+
       verifier.scanForExamples("""
         // BEGIN(add)
         num add(num a, num b) {
@@ -303,7 +303,7 @@ void main() {
           print("Hello, World!");
         }
       """);
-      
+
       verifier.verifyExamples("""
         // BEGIN(add)
         num add(num a, num b) {
@@ -315,7 +315,7 @@ void main() {
           print("Hello, World!");
         }
       """, print: _print);
-      
+
       expect(verifier.errorsEncountered, isTrue);
     });
 
@@ -323,14 +323,14 @@ void main() {
       // BEGIN(thisTestIsSoMeta)
       // meta meta meta
       // END(thisTestIsSoMeta)
-            
+
       verifier.scanDirectory(projectDir, verifier.scanForExamples);
       expect(verifier.examples.length, greaterThan(1));
       expect(verifier.examples["thisTestIsSoMeta"].join(), equalsIgnoringWhitespace("""
         // meta meta meta
       """));
     });
-    
+
     // Because of the way pub uses symlinks, it's common to see the same file
     // multiple times. Ignore files we've already seen.
     test('scanDirectory should ignore files it has already seen because of symlinks', () {
