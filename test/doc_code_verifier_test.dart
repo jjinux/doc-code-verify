@@ -8,8 +8,8 @@ import 'package:doc_code_verify/doc_code_verifier.dart';
 
 Directory get scriptDir => new File(new Options().script).directorySync();
 Directory get projectDir => new Directory(new Path(scriptDir.path).append("..").canonicalize().toNativePath());
-Directory get sourceDir => new Directory(new Path(scriptDir.path).append("/sourceDir").canonicalize().toNativePath());
-Directory get documentationDir => new Directory(new Path(scriptDir.path).append("/documentationDir").canonicalize().toNativePath());
+Directory get sourceDir => new Directory(new Path(scriptDir.path).append("sample_code").canonicalize().toNativePath());
+Directory get documentationDir => new Directory(new Path(scriptDir.path).append("sample_docs").canonicalize().toNativePath());
 
 /**
  * Call a callback with a temporary directory.
@@ -95,12 +95,12 @@ void main() {
       """));
     });
     
-    //Each example can only have one block in the source.
+    // Each example can only have one block in the source.
     test('scanForExamples does not concatenate examples with the same name in a file', () {
       var printedError = false;
       
       void _print(String s) {
-        expect(s, equals("doc_code_verify.dart: Warning, the name `example` was already used"));
+        expect(s, equals("doc_code_verify.dart: The name `example` was already used; ignoring"));
         printedError = true;
       }
         
@@ -127,7 +127,7 @@ void main() {
       var printedError = false;
       
       void _print(String s) {
-        expect(s, equals("doc_code_verify.dart: Warning, the name `example` was already used"));
+        expect(s, equals("doc_code_verify.dart: The name `example` was already used; ignoring"));
         printedError = true;
       }
         
@@ -142,12 +142,12 @@ void main() {
         // END(example)
       """, print: _print);
 
-
       expect(verifier.examples["example"].join(), equalsIgnoringWhitespace("""
         line
       """));
       
       expect(verifier.errorsEncountered, isTrue);
+      expect(printedError, isTrue);
     });
     
     test("scanForExamples complains if you misspell the name of an END", () {
@@ -170,10 +170,11 @@ void main() {
       expect(printedError, isTrue);
       expect(verifier.examples["someName"].join(),
              equalsIgnoringWhitespace("line"));
+      expect(printedError, isTrue);
     });
     
-    //Ommitting an END statment should include the rest of the file in the source directory
-    test("scanForExamples accepts missing END statment", () {
+    
+    test("Omitting an END statment should include the rest of the file in the source directory", () {
       verifier.scanForExamples("""
         // BEGIN(someName)
         line
@@ -182,12 +183,12 @@ void main() {
       
       expect(verifier.errorsEncountered, equals(false));
       expect(verifier.examples["someName"].join(), equalsIgnoringWhitespace("""
-          line
-          line
+        line
+        line
       """));
     });
     
-    test("verifyExamples complains if not in source", () {
+    test("verifyExamples complains if exaple not already in [examples]", () {
       var printedError = false;
 
       void _print(String s) {
@@ -242,13 +243,11 @@ void main() {
           return a + b;
         }
         // END(add)
-
-        void main() {
-          print("Hello, World!");
+        more documentaion
         }
       """);
       
-      expect(verifier.errorsEncountered, equals(false));
+      expect(verifier.errorsEncountered, isFalse);
     });
     
     test('verifyExamples accepts when whitespace is not the same', () {
@@ -277,22 +276,15 @@ void main() {
           print("Hello, World!");
         }
       """);
-
-      expect(verifier.examples["add"].join(), equalsIgnoringWhitespace("""
-        num add(num a, num b) {
-          return a + b;
-        }
-      """));
       
-      expect(verifier.errorsEncountered, equals(false));
+      expect(verifier.errorsEncountered, isFalse);
     });
     
     test('verifyExamples complains if source does not match', () {
       var printedError = false;
 
       void _print(String s) {
-        expect(s, equals("""
-doc_code_verify.dart: 'add' in documentation did not match 'add' in the source code
+        expect(s, equals("""doc_code_verify.dart: 'add' in documentation did not match 'add' in the source code
 \t'add' in the documentation looks like:
 \t        num add(num a, num b) {\n\t          return a + b;\n\t        }
 \n\t'add' in the source looks like:
@@ -324,7 +316,7 @@ doc_code_verify.dart: 'add' in documentation did not match 'add' in the source c
         }
       """, print: _print);
       
-      expect(verifier.errorsEncountered, equals(true));
+      expect(verifier.errorsEncountered, isTrue);
     });
 
     test('scanDirectoryForExamples can scan this directory for examples', () {
@@ -401,7 +393,7 @@ doc_code_verify.dart: 'add' in documentation did not match 'add' in the source c
 
       void _print(String s) {
         expect(s, stringContainsInOrder(["usage: doc_code_verify.dart",
-                                         "DOCUMENTATION CODE OUTPUT"]));
+                                         "DOCUMENTATION CODE"]));
         printedUsage = true;
       }
 

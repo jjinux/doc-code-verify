@@ -5,7 +5,7 @@
 part of doc_code_verifier;
 
 /**
- * [DocCodeVerifier] verifys documentation with code.
+ * [DocCodeVerifier] verifies source code samples embedded within the documentation.
  *
  * See the project README.md for more information.
  *
@@ -31,7 +31,7 @@ class DocCodeVerifier {
     examples = new Map<String, List<String>>();
   }
 
-  /// Scan input for examples and update [examples].
+  /// Scan [sourceCode] for examples and update [examples].
   void scanForExamples(String sourceCode, {PrintFunction print: print}) {
     List<String> lines = sourceCode.split(newlineRegExp);
     var openExamples = new Set<String>();
@@ -41,7 +41,7 @@ class DocCodeVerifier {
       if (beginMatch != null) {
         var exampleName = beginMatch[1];
         if (examples.containsKey(exampleName)) {
-          print("$scriptName: Warning, the name `$exampleName` was already used");
+          print("$scriptName: The name `$exampleName` was already used; ignoring");
           errorsEncountered = true;
         } else {
           openExamples.add(beginMatch[1]);
@@ -52,10 +52,10 @@ class DocCodeVerifier {
       Match endMatch = endRegExp.firstMatch(line);
       if (endMatch != null) {
         var name = endMatch[1];
-        openExamples.remove(name); 
-        if(!examples.containsKey(name)){
-          errorsEncountered = true;
+        openExamples.remove(name);
+        if (!examples.containsKey(name)) {
           print("$scriptName: BEGIN for `$name` not found; spelling error?");
+          errorsEncountered = true;
         }
         return;
       }
@@ -69,7 +69,7 @@ class DocCodeVerifier {
     });
   }
   
-  /// Scan input for examples, verify in [examples].
+  /// Scan [sourceCode] for examples, verify in [examples].
   void verifyExamples(String sourceCode, {PrintFunction print: print}) {
     List<String> lines = sourceCode.split(newlineRegExp);
     var examplesToVerify = new Map<String, List<String>>();
@@ -86,18 +86,17 @@ class DocCodeVerifier {
       if (endMatch != null) {
         var name = endMatch[1];
         openExamples.remove(name);
-        if (examples.containsKey(name) && examplesToVerify.containsKey(name)){
+        if (examples.containsKey(name) && examplesToVerify.containsKey(name)) {
           var sourceExample = examplesToVerify[name].join('\n\t');
           var exampleToVerify = examples[name].join('\n\t');
-          if (collapseWhitespace(exampleToVerify) != collapseWhitespace(sourceExample)){
-              errorsEncountered = true;
-              print("""
-$scriptName: '$name' in documentation did not match '$name' in the source code
+          if (collapseWhitespace(exampleToVerify) != collapseWhitespace(sourceExample)) {
+            errorsEncountered = true;
+            print("""$scriptName: '$name' in documentation did not match '$name' in the source code
 \t'$name' in the documentation looks like:\n\t$exampleToVerify
 \n\t'$name' in the source looks like:\n\t$sourceExample""");         
           }
         }
-        else if(!examples.containsKey(name)){
+        else if (!examples.containsKey(name)) {
           errorsEncountered = true;
           print ("$scriptName: `$name` not found in code directory");
         }
@@ -111,6 +110,7 @@ $scriptName: '$name' in documentation did not match '$name' in the source code
         });
       }
     });
+    
     openExamples.forEach((exampleName) {
       errorsEncountered = true;
       print("$scriptName: END for `$exampleName` not found; spelling error?");
@@ -123,17 +123,17 @@ $scriptName: '$name' in documentation did not match '$name' in the source code
    * Because of the way pub uses symlinks, it's common to see the same file
    * multiple times. Ignore files we've already seen.
    */
-  void scanDirectory(Directory sourceDirectory, methodToCall) {
+  void scanDirectory(Directory dir, ScanDirectoryCallback callback) {
     var pathsSeen = new Set<String>();
-    for (FileSystemEntity fse in sourceDirectory.listSync(recursive: true)) {
+    for (FileSystemEntity fse in dir.listSync(recursive: true)) {
       if (!(fse is File)) continue;
       String path = fse.fullPathSync();
       if (pathsSeen.contains(path)) continue;
       pathsSeen.add(path);
       Path pathPath = new Path(path);  // :)
       if (isPrivate(pathPath)) continue;
-      var sourceCode = new File(path).readAsStringSync();
-      methodToCall(sourceCode);
+      var fileContents = new File(path).readAsStringSync();
+      callback(fileContents);
     }
 
     // This is used in a test. It only works if I put it in the lib directory.
@@ -186,7 +186,7 @@ $scriptName: '$name' in documentation did not match '$name' in the source code
 
   /// Return usage information.
   String getUsage() {
-    return "usage: $scriptName [-h] [--help] DOCUMENTATION CODE OUTPUT";
+    return "usage: $scriptName [-h] [--help] DOCUMENTATION CODE";
   }
 
   /**
@@ -222,3 +222,6 @@ void printNothing(obj) {}
 typedef void ExitFunction(int status);
 
 class Exit implements Exception {}
+
+/// This is used by [scanDirectory].
+typedef void ScanDirectoryCallback(String sourceCode, {PrintFunction print});

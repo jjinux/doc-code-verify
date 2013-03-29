@@ -1,9 +1,9 @@
 doc-code-verify
-==============
+===============
 
-doc-code-verify is a tool to verify source code in the documentation. It checks
-that all code snippets in the documentaion are also in the code source thus ensuring
-that the documentation is always up to date.
+doc-code-verify is a tool to verify source code samples embedded within the documentation. 
+It checks that all code snippets in the documentaion are also in the code source thus 
+ensuring that the documentation is always up to date.
 
 Setup
 -----
@@ -40,7 +40,9 @@ The DOCUMENTATION and CODE directories will not be changed.
 Details
 -------
 
-To get usage, run: doc_code_verify.dart --help
+To get usage, run: 
+	
+	doc_code_verify.dart --help
 
 Example names can contain anything, except a closing parenthesis. They can
 even contain whitespace, but whitespace is significant!
@@ -51,15 +53,16 @@ source code (especially Dart).
 
 Example blocks may overlap with one another.
 
-Examples in the code directory do not have to have matching whitespace to examples
-in the documentation directory.
+The whitespace used in the code doesn't have to perfectly match the whitespaece
+used in the documentation, just incase you need to indent it or format it
+slightly differently.
 
-If two blocks have the same name, it'll display a warning and only the first
-use of that block in the source directory will be used to verify against.
+If two blocks have the same name, it'll display a warning. Only the first
+use of an example name in the source directory will be used for verification.
 
 If you leave out the END for a block in the code directory, it'll include the rest
 of the file. If you leave out the END for a block in the documentation directory,
-it'll give an error. 
+it'll result in a warning. 
 
 Testing
 -------
