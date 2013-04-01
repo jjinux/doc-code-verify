@@ -2,7 +2,7 @@ doc-code-verify
 ===============
 
 doc-code-verify is a tool to verify source code samples embedded within the documentation. 
-It checks that all code snippets in the documentaion are also in the code source thus 
+It checks that all code snippets in the documentation are also in the code source thus 
 ensuring that the documentation is always up to date.
 
 Setup
