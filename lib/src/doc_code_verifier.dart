@@ -40,7 +40,7 @@ class DocCodeVerifier {
       Match beginMatch = beginRegExp.firstMatch(line);
       if (beginMatch != null) {
         var exampleName = beginMatch[1];
-        openExamples.add(beginMatch[1]);
+        openExamples.add(exampleName);
         return;
       }
 
