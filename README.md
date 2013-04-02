@@ -57,8 +57,9 @@ The whitespace used in the code doesn't have to perfectly match the whitespaece
 used in the documentation, just incase you need to indent it or format it
 slightly differently.
 
-If two blocks have the same name, it'll display a warning. Only the first
-use of an example name in the source directory will be used for verification.
+You can use two blocks with the same name. The contents of those blocks will be
+concatenated. This is helpful for times when a code sample contains a bunch of
+pieces of code spread out across a file.
 
 If you leave out the END for a block in the code directory, it'll include the rest
 of the file. If you leave out the END for a block in the documentation directory,

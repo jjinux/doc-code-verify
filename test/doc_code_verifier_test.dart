@@ -95,61 +95,23 @@ void main() {
       """));
     });
 
-    // Each example can only have one block in the source.
-    test('scanForExamples does not concatenate examples with the same name in a file', () {
-      var printedError = false;
-
-      void _print(String s) {
-        expect(s, equals("doc_code_verify.dart: The name `example` was already used; ignoring"));
-        printedError = true;
-      }
-
+    test('scanForExamples lets you spread an example across multiple blocks', () {
       verifier.scanForExamples("""
-        // BEGIN(example)
+        // BEGIN(multiple_blocks)
         line
-        // END(example)
-        line
-        line
-        // BEGIN(example)
-        2 lines
-        2 lines
-        // END(example)
-      """, print: _print);
+        // END(multiple_blocks)
 
-      expect(verifier.examples["example"].join(), equalsIgnoringWhitespace("""
+        // BEGIN(multiple_blocks)
+        line
+        // END(multiple_blocks)
+      """);
+
+      expect(verifier.examples["multiple_blocks"].join(), equalsIgnoringWhitespace("""
+        line
         line
       """));
-
-      expect(verifier.errorsEncountered, isTrue);
     });
-
-    test('scanForExamples complains if an example was added in another file', () {
-      var printedError = false;
-
-      void _print(String s) {
-        expect(s, equals("doc_code_verify.dart: The name `example` was already used; ignoring"));
-        printedError = true;
-      }
-
-      verifier.scanForExamples("""
-        // BEGIN(example)
-        line
-        // END(example)
-      """, print: _print);
-      verifier.scanForExamples("""
-        // BEGIN(example)
-        line
-        // END(example)
-      """, print: _print);
-
-      expect(verifier.examples["example"].join(), equalsIgnoringWhitespace("""
-        line
-      """));
-
-      expect(verifier.errorsEncountered, isTrue);
-      expect(printedError, isTrue);
-    });
-
+    
     test("scanForExamples complains if you misspell the name of an END", () {
       var printedError = false;
 
@@ -170,9 +132,7 @@ void main() {
       expect(printedError, isTrue);
       expect(verifier.examples["someName"].join(),
              equalsIgnoringWhitespace("line"));
-      expect(printedError, isTrue);
     });
-
 
     test("Omitting an END statment should include the rest of the file in the source directory", () {
       verifier.scanForExamples("""
@@ -206,18 +166,22 @@ void main() {
       expect(printedError, isTrue);
     });
 
-    test("verifyExamples complains if no END", () {
+    test("verifyExamples complains if you misspell the name of an END", () {
       var printedError = false;
 
       void _print(String s) {
-        expect(s, equals("doc_code_verify.dart: END for `someName` not found; spelling error?"));
+        expect(s, equals("doc_code_verify.dart: BEGIN for `wrongName` not found in documentation; spelling error?"));
         printedError = true;
       }
+      
+      verifier.examples["someName"] = ["line"];
 
+      // I have to break up BEGIN and END so that they are treated literally
+      // in this test, but nowhere else.
       verifier.verifyExamples("""
-        // BEGIN(someName)
+        // BEGI""" """N(someName)
         line
-        //(someName)
+        // EN""" """D(wrongName)
       """, print: _print);
 
       expect(verifier.errorsEncountered, isTrue);
@@ -443,7 +407,7 @@ void main() {
     // This test is pretty high level.
     test("main does everything", () {
       callWithTemporaryDirectorySync((Directory tempDir) {
-        verifier.main(["--delete-first", sourceDir.path, documentationDir.path],
+        verifier.main([sourceDir.path, documentationDir.path],
             print: printNothing);
         expect(verifier.errorsEncountered, isFalse);
       });

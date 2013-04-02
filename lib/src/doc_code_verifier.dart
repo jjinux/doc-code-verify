@@ -40,12 +40,7 @@ class DocCodeVerifier {
       Match beginMatch = beginRegExp.firstMatch(line);
       if (beginMatch != null) {
         var exampleName = beginMatch[1];
-        if (examples.containsKey(exampleName)) {
-          print("$scriptName: The name `$exampleName` was already used; ignoring");
-          errorsEncountered = true;
-        } else {
-          openExamples.add(beginMatch[1]);
-        }
+        openExamples.add(beginMatch[1]);
         return;
       }
 
@@ -86,19 +81,9 @@ class DocCodeVerifier {
       if (endMatch != null) {
         var name = endMatch[1];
         openExamples.remove(name);
-        if (examples.containsKey(name) && examplesToVerify.containsKey(name)) {
-          var sourceExample = examplesToVerify[name].join('\n\t');
-          var exampleToVerify = examples[name].join('\n\t');
-          if (collapseWhitespace(exampleToVerify) != collapseWhitespace(sourceExample)) {
-            errorsEncountered = true;
-            print("""$scriptName: '$name' in documentation did not match '$name' in the source code
-\t'$name' in the documentation looks like:\n\t$exampleToVerify
-\n\t'$name' in the source looks like:\n\t$sourceExample""");
-          }
-        }
-        else if (!examples.containsKey(name)) {
+        if (!examplesToVerify.containsKey(name)) {
+          print("$scriptName: BEGIN for `$name` not found in documentation; spelling error?");
           errorsEncountered = true;
-          print ("$scriptName: `$name` not found in code directory");
         }
         return;
       }
@@ -111,9 +96,21 @@ class DocCodeVerifier {
       }
     });
 
-    openExamples.forEach((exampleName) {
-      errorsEncountered = true;
-      print("$scriptName: END for `$exampleName` not found; spelling error?");
+    examplesToVerify.forEach((String name, List<String> lines) {
+      if (!examples.containsKey(name)) {
+        errorsEncountered = true;
+        print ("$scriptName: `$name` not found in code directory");
+        return;
+      }
+      
+      var exampleStr = examples[name].join('\n\t');
+      var exampleToVerifyStr = examplesToVerify[name].join('\n\t');
+      if (collapseWhitespace(exampleStr) != collapseWhitespace(exampleToVerifyStr)) {
+        errorsEncountered = true;
+        print("""$scriptName: '$name' in documentation did not match '$name' in the source code
+\t'$name' in the documentation looks like:\n\t$exampleStr
+\n\t'$name' in the source looks like:\n\t$exampleToVerifyStr""");
+      }
     });
   }
 
